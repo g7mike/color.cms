@@ -1,4 +1,4 @@
-# JetPress 750S, Pantone Spot Color
-Pantone专色模拟打印，基本300g瑞典白卡纸打印
+#Pantone Spot Color查询
+根据Lab值查询最接近的Pantone号码，或者根据Pantone号码来查询Lab值
 模拟颜色仅供参考，实际打样的颜色与纸白和设备参数与状态有关
 预览颜色的准确度与手机及浏览器等有关，
