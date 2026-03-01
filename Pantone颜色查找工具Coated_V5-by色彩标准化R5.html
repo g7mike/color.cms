@@ -1,0 +1,3395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantone颜色Lab值查询与匹配工具-by Mike</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4a6fa5 0%, #2c3e50 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-top: 0; /* 新增这一行 */
+			text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .input-group input[type="text"],
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .input-group input:focus {
+            border-color: #4a6fa5;
+            outline: none;
+        }
+        
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .slider-label {
+            min-width: 60px;
+            font-weight: 500;
+        }
+        
+        .slider-container {
+            flex: 1;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            font-family: monospace;
+        }
+        
+        .color-display {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .color-name {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .color-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            text-align: center;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .search-btn {
+            background-color: #4a6fa5;
+            color: white;
+        }
+        
+        .clear-btn {
+            background-color: #f1f1f1;
+            color: #555;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .results-table th, .results-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .results-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .color-sample {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .delta-e {
+            font-weight: 600;
+        }
+        
+        .delta-e-low { color: #27ae60; }
+        .delta-e-medium { color: #f39c12; }
+        .delta-e-high { color: #e74c3c; }
+        
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+        
+        .info-section {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: #777;
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+        
+        .quick-suggestions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .quick-btn {
+            padding: 5px 10px;
+            background-color: #f0f7ff;
+            border: 1px solid #4a6fa5;
+            border-radius: 4px;
+            color: #4a6fa5;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .quick-btn:hover {
+            background-color: #e1ecf7;
+        }
+        
+        /* 新增样式：相似颜色选择区域 */
+        .similar-colors-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4a6fa5;
+        }
+        
+        .similar-colors-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        /* 改为两排显示，每排5个 */
+        .similar-colors-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        /* 新增：第二排容器 */
+        .similar-colors-grid-row2 {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        .similar-color-item {
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .similar-color-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .similar-color-sample {
+            width: 100%;
+            height: 40px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .similar-color-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        /* 新增：当前选中颜色样式 */
+        .selected-color {
+            border: 2px solid #4a6fa5;
+            box-shadow: 0 0 8px rgba(74, 111, 165, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pantone专色Lab值查询工具</h1>
+			<span style="color: #D08900; font-weight: bold;">by 色彩标准化 公众号</span>
+		    <span style="font-size: 20px; display:block;"></span>
+            <p class="subtitle">标准：Pantone Coated V5 M0（2391个色块）；<br>用法： 输入Pantone号查询Lab值及对应颜色，<br>或输入Lab值查找最接近的Pantone号</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="panel">
+                <h2 class="panel-title">Pantone颜色及Lab值查询</h2>
+                <div class="input-group">
+                    <label for="pantoneInput">输入Pantone号（如: 100, 871, Yellow）</label>
+                    <input type="text" id="pantoneInput" placeholder="100 C">
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="search-btn" id="searchPantoneBtn">查询Pantone颜色</button>
+                    <button class="clear-btn" id="clearPantoneBtn">清除</button>
+                </div>
+                
+                <div class="color-display" id="pantoneColorDisplay"></div>
+                
+                <div class="color-info" id="pantoneColorInfo">未查询</div>
+                
+                <!-- 相似颜色选择区域 -->
+                <div class="similar-colors-section" id="similarColorsSection" style="display: none;">
+                    <div class="similar-colors-title">相似Pantone颜色（点击选择）</div>
+                    <div class="similar-colors-grid" id="similarColorsGridRow1">
+                        <!-- 第一排相似颜色将通过JavaScript动态添加 -->
+                    </div>
+                    <div class="similar-colors-grid-row2" id="similarColorsGridRow2">
+                        <!-- 第二排相似颜色将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+                
+                <h2 class="panel-title" style="margin-top: 20px;">Lab值查询与匹配</h2>
+                
+                <div class="slider-group">
+                    <div class="slider-label">L (明度)</div>
+                    <div class="slider-container">
+                        <input type="range" id="labLSlider" min="0" max="100" step="0.1" value="50.0">
+                    </div>
+                    <div class="slider-value">
+                        <input type="number" id="labL" min="0" max="100" step="0.1" value="50.0" style="width: 60px;">
+                    </div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">a (红-绿)</div>
+                    <div class="slider-container">
+                        <input type="range" id="labASlider" min="-128" max="127" step="0.1" value="0.0">
+                    </div>
+                    <div class="slider-value">
+                        <input type="number" id="labA" min="-128" max="127" step="0.1" value="0.0" style="width: 60px;">
+                    </div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">b (黄-蓝)</div>
+                    <div class="slider-container">
+                        <input type="range" id="labBSlider" min="-128" max="127" step="0.1" value="0.0">
+                    </div>
+                    <div class="slider-value">
+                        <input type="number" id="labB" min="-128" max="127" step="0.1" value="0.0" style="width: 60px;">
+                    </div>
+                </div>
+                
+                <div class="quick-suggestions">
+                    <div class="quick-btn" data-lab="89.09,-1.54,110.89">亮黄</div>
+                    <div class="quick-btn" data-lab="57.5,72.54,59.53">亮红</div>
+                    <div class="quick-btn" data-lab="47.62,-32.02,-55.12">青色</div>
+                    <div class="quick-btn" data-lab="17.27,1.35,2.03">黑色</div>
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 15px;">
+                    <button class="search-btn" id="searchLabBtn">查找最接近的Pantone颜色</button>
+                    <button class="clear-btn" id="clearLabBtn">清除</button>
+                </div>
+                
+                <div class="color-display" id="labColorDisplay"></div>
+            </div>
+            
+            <div class="panel">
+                <h2 class="panel-title">匹配结果</h2>
+                <div id="resultsContainer">
+                    <div class="no-results" id="noResultsMessage">
+                        输入Lab值并点击"查找最接近的Pantone颜色"查看匹配结果
+                    </div>
+                    
+                    <table class="results-table" id="resultsTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>颜色</th>
+                                <th>Pantone号</th>
+                                <th>Lab值</th>
+                                <th>∆E2000</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <p><strong>关于此工具：</strong><br>本工具使用2391个PANTONE+ Solid Coated-V5 (M0)颜色数据库;<br>Pantone版权归属Xrite公司，包含基本色、常用色和代表性颜色;<br>
+                输入Pantone号查询Lab值和颜色，或输入Lab值查找最接近的10个Pantone颜色并列出∆E2000色差。</p>
+            <p><strong>∆E2000色差解释：</strong><br>≤2.0（差异很小），2.0-5.0（可察觉差异），>5.0（明显差异）</p>
+        </div>
+        
+        <footer>
+            <p>Pantone颜色Lab值查询与匹配工具V4<br> &copy; 2026 色彩标准化公众号 | by Mike Yao</p>
+        </footer>
+    </div>
+
+    <script>
+        // 精选的10个Pantone颜色数据库（演示用）
+		// Pantone颜色数据库 (JavaScript数组格式)
+		// 文件编码: ISO-8859-1
+		const pantoneDatabase = [
+		    {id: "PANTONE 6001 C", L: 84.33, a: 1.46, b: 41.48},
+		    {id: "PANTONE 6002 C", L: 82.25, a: 4.83, b: 47.5},
+		    {id: "PANTONE 6003 C", L: 77.05, a: 8.18, b: 58.55},
+		    {id: "PANTONE 6004 C", L: 74.09, a: 10.61, b: 65.35},
+		    {id: "PANTONE 6005 C", L: 71.46, a: 12.74, b: 70.04},
+		    {id: "PANTONE 6006 C", L: 66.69, a: 15.57, b: 67.18},
+		    {id: "PANTONE 6007 C", L: 57.96, a: 22.12, b: 53.6},
+		    {id: "PANTONE 6008 C", L: 67.25, a: 8.4, b: 23.55},
+		    {id: "PANTONE 6009 C", L: 61.04, a: 10.23, b: 27.87},
+		    {id: "PANTONE 6010 C", L: 56.23, a: 11.3, b: 29.41},
+		    {id: "PANTONE 6011 C", L: 53.26, a: 12.18, b: 32.04},
+		    {id: "PANTONE 6012 C", L: 44.07, a: 13.87, b: 32.28},
+		    {id: "PANTONE 6013 C", L: 38.97, a: 15.66, b: 31.99},
+		    {id: "PANTONE 6014 C", L: 36.0, a: 7.33, b: 24.67},
+		    {id: "PANTONE 6015 C", L: 78.01, a: 20.07, b: 32.9},
+		    {id: "PANTONE 6016 C", L: 73.44, a: 30.41, b: 46.01},
+		    {id: "PANTONE 6017 C", L: 71.67, a: 37.93, b: 55.76},
+		    {id: "PANTONE 6018 C", L: 67.5, a: 42.88, b: 62.01},
+		    {id: "PANTONE 6019 C", L: 62.47, a: 49.96, b: 69.41},
+		    {id: "PANTONE 6020 C", L: 56.86, a: 53.65, b: 68.22},
+		    {id: "PANTONE 6021 C", L: 55.47, a: 49.25, b: 59.15},
+		    {id: "PANTONE 6022 C", L: 82.54, a: 19.25, b: 13.5},
+		    {id: "PANTONE 6023 C", L: 77.62, a: 21.33, b: 18.49},
+		    {id: "PANTONE 6024 C", L: 70.56, a: 29.9, b: 23.41},
+		    {id: "PANTONE 6025 C", L: 64.57, a: 34.29, b: 29.25},
+		    {id: "PANTONE 6026 C", L: 60.7, a: 36.78, b: 33.98},
+		    {id: "PANTONE 6027 C", L: 53.76, a: 38.37, b: 39.45},
+		    {id: "PANTONE 6028 C", L: 51.06, a: 37.75, b: 36.12},
+		    {id: "PANTONE 6029 C", L: 74.71, a: 12.68, b: 6.13},
+		    {id: "PANTONE 6030 C", L: 69.18, a: 15.1, b: 9.38},
+		    {id: "PANTONE 6031 C", L: 63.59, a: 16.37, b: 12.67},
+		    {id: "PANTONE 6032 C", L: 59.19, a: 18.14, b: 13.75},
+		    {id: "PANTONE 6033 C", L: 54.98, a: 19.98, b: 16.07},
+		    {id: "PANTONE 6034 C", L: 50.84, a: 21.04, b: 19.28},
+		    {id: "PANTONE 6035 C", L: 46.14, a: 21.5, b: 21.32},
+		    {id: "PANTONE 6036 C", L: 64.24, a: 21.37, b: 2.55},
+		    {id: "PANTONE 6037 C", L: 55.91, a: 23.91, b: 5.13},
+		    {id: "PANTONE 6038 C", L: 50.4, a: 27.17, b: 6.86},
+		    {id: "PANTONE 6039 C", L: 44.37, a: 28.48, b: 8.33},
+		    {id: "PANTONE 6040 C", L: 38.22, a: 30.51, b: 11.63},
+		    {id: "PANTONE 6041 C", L: 33.72, a: 31.04, b: 13.27},
+		    {id: "PANTONE 6042 C", L: 26.49, a: 25.37, b: 11.73},
+		    {id: "PANTONE 6043 C", L: 71.65, a: 39.68, b: 11.48},
+		    {id: "PANTONE 6044 C", L: 68.57, a: 43.04, b: 13.81},
+		    {id: "PANTONE 6045 C", L: 66.03, a: 45.81, b: 16.69},
+		    {id: "PANTONE 6046 C", L: 61.88, a: 48.8, b: 21.85},
+		    {id: "PANTONE 6047 C", L: 52.4, a: 52.55, b: 34.76},
+		    {id: "PANTONE 6048 C", L: 53.1, a: 52.81, b: 31.62},
+		    {id: "PANTONE 6049 C", L: 47.15, a: 48.37, b: 41.26},
+		    {id: "PANTONE 6050 C", L: 78.6, a: 35.85, b: -6.02},
+		    {id: "PANTONE 6051 C", L: 70.52, a: 50.08, b: 1.43},
+		    {id: "PANTONE 6052 C", L: 63.16, a: 50.64, b: 5.12},
+		    {id: "PANTONE 6053 C", L: 62.44, a: 62.36, b: 11.62},
+		    {id: "PANTONE 6054 C", L: 57.1, a: 56.66, b: 7.17},
+		    {id: "PANTONE 6055 C", L: 52.1, a: 59.05, b: 14.58},
+		    {id: "PANTONE 6056 C", L: 49.0, a: 58.96, b: 20.29},
+		    {id: "PANTONE 6057 C", L: 57.42, a: 52.12, b: -11.35},
+		    {id: "PANTONE 6058 C", L: 52.51, a: 55.56, b: -9.77},
+		    {id: "PANTONE 6059 C", L: 50.43, a: 56.6, b: -8.21},
+		    {id: "PANTONE 6060 C", L: 47.91, a: 56.91, b: -6.61},
+		    {id: "PANTONE 6061 C", L: 44.31, a: 56.62, b: -4.46},
+		    {id: "PANTONE 6062 C", L: 43.4, a: 56.82, b: -1.66},
+		    {id: "PANTONE 6063 C", L: 39.98, a: 52.87, b: 2.02},
+		    {id: "PANTONE 6064 C", L: 74.94, a: 15.54, b: -6.79},
+		    {id: "PANTONE 6065 C", L: 69.09, a: 20.07, b: -4.62},
+		    {id: "PANTONE 6066 C", L: 64.92, a: 22.04, b: -4.39},
+		    {id: "PANTONE 6067 C", L: 59.73, a: 23.45, b: -3.84},
+		    {id: "PANTONE 6068 C", L: 55.9, a: 24.64, b: -4.21},
+		    {id: "PANTONE 6069 C", L: 49.42, a: 26.32, b: -3.22},
+		    {id: "PANTONE 6070 C", L: 48.53, a: 24.98, b: -2.76},
+		    {id: "PANTONE 6071 C", L: 53.92, a: 16.32, b: -13.23},
+		    {id: "PANTONE 6072 C", L: 39.94, a: 20.4, b: -14.4},
+		    {id: "PANTONE 6073 C", L: 34.49, a: 20.56, b: -13.86},
+		    {id: "PANTONE 6074 C", L: 31.65, a: 20.58, b: -12.83},
+		    {id: "PANTONE 6075 C", L: 28.33, a: 19.89, b: -11.81},
+		    {id: "PANTONE 6076 C", L: 21.5, a: 17.22, b: -9.33},
+		    {id: "PANTONE 6077 C", L: 18.41, a: 10.8, b: -4.97},
+		    {id: "PANTONE 6078 C", L: 67.3, a: 25.37, b: -23.01},
+		    {id: "PANTONE 6079 C", L: 60.35, a: 30.13, b: -25.74},
+		    {id: "PANTONE 6080 C", L: 53.21, a: 33.54, b: -27.93},
+		    {id: "PANTONE 6081 C", L: 50.5, a: 35.68, b: -29.3},
+		    {id: "PANTONE 6082 C", L: 44.59, a: 37.08, b: -29.01},
+		    {id: "PANTONE 6083 C", L: 38.46, a: 39.46, b: -30.16},
+		    {id: "PANTONE 6084 C", L: 34.5, a: 37.94, b: -28.7},
+		    {id: "PANTONE 6085 C", L: 83.02, a: 1.75, b: -14.33},
+		    {id: "PANTONE 6086 C", L: 74.03, a: 2.54, b: -18.36},
+		    {id: "PANTONE 6087 C", L: 68.6, a: 3.0, b: -21.11},
+		    {id: "PANTONE 6088 C", L: 62.43, a: 3.43, b: -24.58},
+		    {id: "PANTONE 6089 C", L: 57.73, a: 5.29, b: -31.05},
+		    {id: "PANTONE 6090 C", L: 49.74, a: 7.32, b: -31.37},
+		    {id: "PANTONE 6091 C", L: 41.56, a: 7.83, b: -34.07},
+		    {id: "PANTONE 6092 C", L: 60.78, a: 8.43, b: -29.32},
+		    {id: "PANTONE 6093 C", L: 57.94, a: 8.73, b: -31.08},
+		    {id: "PANTONE 6094 C", L: 52.69, a: 10.44, b: -32.96},
+		    {id: "PANTONE 6095 C", L: 50.0, a: 11.19, b: -35.63},
+		    {id: "PANTONE 6096 C", L: 42.97, a: 13.7, b: -38.24},
+		    {id: "PANTONE 6097 C", L: 37.37, a: 14.71, b: -41.32},
+		    {id: "PANTONE 6098 C", L: 32.04, a: 15.53, b: -41.82},
+		    {id: "PANTONE 6099 C", L: 67.41, a: 1.91, b: -30.31},
+		    {id: "PANTONE 6100 C", L: 60.11, a: 1.84, b: -33.06},
+		    {id: "PANTONE 6101 C", L: 53.71, a: 3.67, b: -38.31},
+		    {id: "PANTONE 6102 C", L: 49.8, a: 3.45, b: -37.27},
+		    {id: "PANTONE 6103 C", L: 36.35, a: 8.3, b: -40.13},
+		    {id: "PANTONE 6104 C", L: 26.63, a: 13.17, b: -48.49},
+		    {id: "PANTONE 6105 C", L: 25.88, a: 13.29, b: -44.81},
+		    {id: "PANTONE 6106 C", L: 76.92, a: -0.12, b: -12.64},
+		    {id: "PANTONE 6107 C", L: 72.53, a: -0.96, b: -15.23},
+		    {id: "PANTONE 6108 C", L: 66.27, a: -2.54, b: -17.56},
+		    {id: "PANTONE 6109 C", L: 58.58, a: -3.04, b: -19.97},
+		    {id: "PANTONE 6110 C", L: 55.6, a: -2.54, b: -20.45},
+		    {id: "PANTONE 6111 C", L: 50.3, a: -2.05, b: -22.18},
+		    {id: "PANTONE 6112 C", L: 37.55, a: -4.12, b: -24.25},
+		    {id: "PANTONE 6113 C", L: 54.6, a: -7.47, b: -12.35},
+		    {id: "PANTONE 6114 C", L: 51.8, a: -6.62, b: -12.22},
+		    {id: "PANTONE 6115 C", L: 46.86, a: -7.29, b: -11.59},
+		    {id: "PANTONE 6116 C", L: 41.7, a: -7.9, b: -11.74},
+		    {id: "PANTONE 6117 C", L: 39.13, a: -7.66, b: -11.8},
+		    {id: "PANTONE 6118 C", L: 28.24, a: -7.09, b: -6.76},
+		    {id: "PANTONE 6119 C", L: 24.2, a: -5.06, b: -5.41},
+		    {id: "PANTONE 6120 C", L: 63.0, a: -20.28, b: -34.69},
+		    {id: "PANTONE 6121 C", L: 58.89, a: -22.38, b: -37.94},
+		    {id: "PANTONE 6122 C", L: 52.16, a: -23.3, b: -41.99},
+		    {id: "PANTONE 6123 C", L: 49.97, a: -22.95, b: -42.8},
+		    {id: "PANTONE 6124 C", L: 46.58, a: -22.83, b: -43.75},
+		    {id: "PANTONE 6125 C", L: 43.5, a: -21.65, b: -40.95},
+		    {id: "PANTONE 6126 C", L: 35.52, a: -12.5, b: -45.31},
+		    {id: "PANTONE 6127 C", L: 68.06, a: -21.34, b: -20.76},
+		    {id: "PANTONE 6128 C", L: 61.0, a: -25.62, b: -24.04},
+		    {id: "PANTONE 6129 C", L: 54.61, a: -30.35, b: -25.12},
+		    {id: "PANTONE 6130 C", L: 48.62, a: -33.29, b: -25.67},
+		    {id: "PANTONE 6131 C", L: 41.23, a: -33.13, b: -26.19},
+		    {id: "PANTONE 6132 C", L: 44.66, a: -31.57, b: -29.15},
+		    {id: "PANTONE 6133 C", L: 37.45, a: -26.2, b: -24.91},
+		    {id: "PANTONE 6134 C", L: 76.57, a: -22.2, b: -12.54},
+		    {id: "PANTONE 6135 C", L: 70.37, a: -22.93, b: -11.11},
+		    {id: "PANTONE 6136 C", L: 62.47, a: -27.72, b: -11.74},
+		    {id: "PANTONE 6137 C", L: 58.48, a: -29.86, b: -12.04},
+		    {id: "PANTONE 6138 C", L: 53.59, a: -33.08, b: -11.98},
+		    {id: "PANTONE 6139 C", L: 48.88, a: -33.64, b: -11.94},
+		    {id: "PANTONE 6140 C", L: 45.87, a: -33.6, b: -11.17},
+		    {id: "PANTONE 6141 C", L: 77.31, a: -25.96, b: -2.97},
+		    {id: "PANTONE 6142 C", L: 71.28, a: -32.8, b: -0.22},
+		    {id: "PANTONE 6143 C", L: 63.72, a: -42.33, b: 2.63},
+		    {id: "PANTONE 6144 C", L: 58.85, a: -47.6, b: 5.39},
+		    {id: "PANTONE 6145 C", L: 53.01, a: -52.35, b: 7.81},
+		    {id: "PANTONE 6146 C", L: 48.46, a: -55.15, b: 9.38},
+		    {id: "PANTONE 6147 C", L: 45.36, a: -52.4, b: 12.38},
+		    {id: "PANTONE 6148 C", L: 88.38, a: -2.97, b: -6.75},
+		    {id: "PANTONE 6149 C", L: 83.43, a: -8.06, b: -5.54},
+		    {id: "PANTONE 6150 C", L: 76.77, a: -13.95, b: -5.1},
+		    {id: "PANTONE 6151 C", L: 70.52, a: -19.19, b: -5.91},
+		    {id: "PANTONE 6152 C", L: 61.49, a: -23.65, b: 0.04},
+		    {id: "PANTONE 6153 C", L: 52.53, a: -27.14, b: 2.49},
+		    {id: "PANTONE 6154 C", L: 44.69, a: -31.92, b: 8.62},
+		    {id: "PANTONE 6155 C", L: 63.77, a: -21.17, b: 2.62},
+		    {id: "PANTONE 6156 C", L: 57.23, a: -24.51, b: 4.34},
+		    {id: "PANTONE 6157 C", L: 51.93, a: -27.12, b: 6.64},
+		    {id: "PANTONE 6158 C", L: 47.52, a: -30.88, b: 8.88},
+		    {id: "PANTONE 6159 C", L: 41.86, a: -32.82, b: 7.57},
+		    {id: "PANTONE 6160 C", L: 34.18, a: -30.0, b: 9.47},
+		    {id: "PANTONE 6161 C", L: 28.08, a: -22.54, b: 6.05},
+		    {id: "PANTONE 6162 C", L: 62.41, a: -42.49, b: 15.09},
+		    {id: "PANTONE 6163 C", L: 57.93, a: -49.96, b: 15.54},
+		    {id: "PANTONE 6164 C", L: 56.01, a: -56.4, b: 17.25},
+		    {id: "PANTONE 6165 C", L: 51.29, a: -60.79, b: 19.76},
+		    {id: "PANTONE 6166 C", L: 48.32, a: -63.5, b: 22.28},
+		    {id: "PANTONE 6167 C", L: 40.14, a: -57.93, b: 19.48},
+		    {id: "PANTONE 6168 C", L: 41.75, a: -51.45, b: 17.24},
+		    {id: "PANTONE 6169 C", L: 69.63, a: -33.56, b: 23.29},
+		    {id: "PANTONE 6170 C", L: 65.79, a: -35.21, b: 23.95},
+		    {id: "PANTONE 6171 C", L: 61.99, a: -36.39, b: 26.65},
+		    {id: "PANTONE 6172 C", L: 56.09, a: -33.87, b: 23.91},
+		    {id: "PANTONE 6173 C", L: 49.82, a: -40.94, b: 28.98},
+		    {id: "PANTONE 6174 C", L: 46.22, a: -38.1, b: 26.02},
+		    {id: "PANTONE 6175 C", L: 42.39, a: -32.03, b: 20.83},
+		    {id: "PANTONE 6176 C", L: 74.09, a: -17.03, b: 8.76},
+		    {id: "PANTONE 6177 C", L: 68.16, a: -19.69, b: 11.77},
+		    {id: "PANTONE 6178 C", L: 62.41, a: -23.85, b: 14.82},
+		    {id: "PANTONE 6179 C", L: 57.04, a: -28.13, b: 17.46},
+		    {id: "PANTONE 6180 C", L: 50.73, a: -28.76, b: 17.31},
+		    {id: "PANTONE 6181 C", L: 48.25, a: -30.65, b: 19.76},
+		    {id: "PANTONE 6182 C", L: 43.65, a: -30.16, b: 20.47},
+		    {id: "PANTONE 6183 C", L: 54.72, a: -8.42, b: 9.38},
+		    {id: "PANTONE 6184 C", L: 51.6, a: -9.94, b: 11.04},
+		    {id: "PANTONE 6185 C", L: 45.95, a: -9.14, b: 12.15},
+		    {id: "PANTONE 6186 C", L: 41.13, a: -9.38, b: 11.94},
+		    {id: "PANTONE 6187 C", L: 37.45, a: -9.13, b: 12.6},
+		    {id: "PANTONE 6188 C", L: 33.03, a: -9.66, b: 11.5},
+		    {id: "PANTONE 6189 C", L: 23.85, a: -8.4, b: 4.24},
+		    {id: "PANTONE 6190 C", L: 91.25, a: -7.72, b: 22.37},
+		    {id: "PANTONE 6191 C", L: 90.56, a: -9.91, b: 31.79},
+		    {id: "PANTONE 6192 C", L: 86.51, a: -15.78, b: 49.23},
+		    {id: "PANTONE 6193 C", L: 82.9, a: -19.68, b: 66.48},
+		    {id: "PANTONE 6194 C", L: 77.25, a: -21.48, b: 75.7},
+		    {id: "PANTONE 6195 C", L: 68.71, a: -24.26, b: 72.07},
+		    {id: "PANTONE 6196 C", L: 67.49, a: -23.72, b: 67.73},
+		    {id: "PANTONE 6197 C", L: 86.26, a: -1.5, b: 3.18},
+		    {id: "PANTONE 6198 C", L: 81.56, a: -2.47, b: 5.76},
+		    {id: "PANTONE 6199 C", L: 76.65, a: -2.61, b: 8.12},
+		    {id: "PANTONE 6200 C", L: 73.3, a: -2.49, b: 10.47},
+		    {id: "PANTONE 6201 C", L: 66.01, a: -3.71, b: 13.57},
+		    {id: "PANTONE 6202 C", L: 61.47, a: -4.51, b: 15.59},
+		    {id: "PANTONE 6203 C", L: 58.96, a: -3.9, b: 17.45},
+		    {id: "PANTONE 6204 C", L: 66.94, a: -0.32, b: 9.5},
+		    {id: "PANTONE 6205 C", L: 60.39, a: 0.7, b: 13.73},
+		    {id: "PANTONE 6206 C", L: 56.35, a: 0.68, b: 14.15},
+		    {id: "PANTONE 6207 C", L: 53.94, a: 0.51, b: 14.84},
+		    {id: "PANTONE 6208 C", L: 47.24, a: 0.92, b: 16.03},
+		    {id: "PANTONE 6209 C", L: 42.66, a: 0.48, b: 17.14},
+		    {id: "PANTONE 6210 C", L: 37.73, a: -0.06, b: 17.18},
+		    {id: "PANTONE 6211 C", L: 60.94, a: -1.33, b: -4.77},
+		    {id: "PANTONE 6212 C", L: 54.5, a: -1.22, b: -3.93},
+		    {id: "PANTONE 6213 C", L: 50.06, a: -1.65, b: -3.43},
+		    {id: "PANTONE 6214 C", L: 46.92, a: -1.68, b: -2.61},
+		    {id: "PANTONE 6215 C", L: 42.51, a: -1.89, b: -1.72},
+		    {id: "PANTONE 6216 C", L: 34.72, a: -0.78, b: 0.59},
+		    {id: "PANTONE 6217 C", L: 30.65, a: -1.86, b: 1.55},
+		    {id: "PANTONE 6218 C", L: 64.73, a: -2.02, b: -8.35},
+		    {id: "PANTONE 6219 C", L: 58.89, a: -2.69, b: -8.02},
+		    {id: "PANTONE 6220 C", L: 53.72, a: -2.84, b: -7.66},
+		    {id: "PANTONE 6221 C", L: 49.52, a: -3.43, b: -8.1},
+		    {id: "PANTONE 6222 C", L: 45.35, a: -3.96, b: -7.48},
+		    {id: "PANTONE 6223 C", L: 38.84, a: -3.99, b: -7.44},
+		    {id: "PANTONE 6224 C", L: 34.93, a: -3.99, b: -7.05},
+		    {id: "PANTONE Yellow 012 C", L: 87.66, a: 2.24, b: 108.65},
+		    {id: "PANTONE Bright Red C", L: 57.5, a: 72.55, b: 59.53},
+		    {id: "PANTONE Pink C", L: 51.25, a: 73.39, b: -19.23},
+		    {id: "PANTONE Medium Purple C", L: 21.47, a: 50.92, b: -61.06},
+		    {id: "PANTONE Dark Blue C", L: 20.88, a: 30.34, b: -69.54},
+		    {id: "PANTONE Yellow 0131 C", L: 93.51, a: -6.32, b: 32.69},
+		    {id: "PANTONE Red 0331 C", L: 79.65, a: 31.93, b: 2.11},
+		    {id: "PANTONE Magenta 0521 C", L: 80.13, a: 30.64, b: -16.38},
+		    {id: "PANTONE Violet 0631 C", L: 69.64, a: 25.58, b: -33.62},
+		    {id: "PANTONE Blue 0821 C", L: 78.35, a: -22.57, b: -26.66},
+		    {id: "PANTONE Green 0921 C", L: 86.31, a: -26.12, b: -4.37},
+		    {id: "PANTONE Black 0961 C", L: 62.7, a: 2.22, b: 3.29},
+		    {id: "PANTONE 801 C", L: 55.63, a: -36.18, b: -45.48},
+		    {id: "PANTONE 802 C", L: 75.92, a: -65.48, b: 63.19},
+		    {id: "PANTONE 803 C", L: 94.1, a: -1.18, b: 93.56},
+		    {id: "PANTONE 804 C", L: 84.4, a: 44.46, b: 66.88},
+		    {id: "PANTONE 805 C", L: 73.44, a: 69.74, b: 34.69},
+		    {id: "PANTONE 806 C", L: 64.7, a: 83.86, b: -14.18},
+		    {id: "PANTONE 807 C", L: 56.46, a: 80.68, b: -35.89},
+		    {id: "PANTONE 871 C", L: 50.79, a: 2.24, b: 23.42},
+		    {id: "PANTONE 872 C", L: 49.74, a: 4.91, b: 23.01},
+		    {id: "PANTONE 873 C", L: 48.86, a: 7.32, b: 23.25},
+		    {id: "PANTONE 874 C", L: 49.9, a: 8.5, b: 22.52},
+		    {id: "PANTONE 875 C", L: 47.24, a: 11.69, b: 19.27},
+		    {id: "PANTONE 876 C", L: 46.74, a: 15.36, b: 20.9},
+		    {id: "PANTONE 877 C", L: 59.52, a: -0.76, b: -2.08},
+		    {id: "PANTONE Yellow PY12 C", L: 88.25, a: -4.28, b: 102.03},
+		    {id: "PANTONE Orange 016 C", L: 61.75, a: 63.97, b: 81.17},
+		    {id: "PANTONE Purple v2 C", L: 47.83, a: 56.29, b: -36.03},
+		    {id: "PANTONE Violet v2 C", L: 18.53, a: 41.58, b: -57.32},
+		    {id: "PANTONE Real Purple C", L: 50.86, a: 69.83, b: -38.74},
+		    {id: "PANTONE 100 C", L: 92.14, a: -7.54, b: 63.47},
+		    {id: "PANTONE 101 C", L: 91.85, a: -7.59, b: 72.43},
+		    {id: "PANTONE 102 C", L: 90.34, a: -5.12, b: 106.01},
+		    {id: "PANTONE Yellow C", L: 89.09, a: -1.55, b: 110.88},
+		    {id: "PANTONE 103 C", L: 70.24, a: 0.28, b: 83.62},
+		    {id: "PANTONE 104 C", L: 63.61, a: -0.38, b: 69.87},
+		    {id: "PANTONE 105 C", L: 51.62, a: -0.77, b: 44.36},
+		    {id: "PANTONE 7401 C", L: 90.23, a: 1.9, b: 29.25},
+		    {id: "PANTONE 7402 C", L: 87.01, a: 1.75, b: 31.9},
+		    {id: "PANTONE 7403 C", L: 85.92, a: 3.13, b: 40.02},
+		    {id: "PANTONE 7404 C", L: 87.51, a: -0.84, b: 71.97},
+		    {id: "PANTONE 7405 C", L: 83.87, a: 2.29, b: 88.92},
+		    {id: "PANTONE 7406 C", L: 81.52, a: 6.76, b: 87.97},
+		    {id: "PANTONE 7407 C", L: 68.97, a: 11.27, b: 44.59},
+		    {id: "PANTONE 2001 C", L: 91.12, a: 0.09, b: 35.39},
+		    {id: "PANTONE 2002 C", L: 90.13, a: 0.09, b: 48.61},
+		    {id: "PANTONE 2003 C", L: 89.97, a: -1.53, b: 59.51},
+		    {id: "PANTONE 2004 C", L: 89.01, a: 2.96, b: 49.63},
+		    {id: "PANTONE 2005 C", L: 88.05, a: 6.75, b: 45.35},
+		    {id: "PANTONE 2006 C", L: 78.94, a: 9.83, b: 58.7},
+		    {id: "PANTONE 2007 C", L: 72.07, a: 15.72, b: 66.78},
+		    {id: "PANTONE 106 C", L: 90.68, a: -4.12, b: 72.08},
+		    {id: "PANTONE 107 C", L: 89.84, a: -2.52, b: 81.73},
+		    {id: "PANTONE 108 C", L: 88.44, a: 0.51, b: 93.12},
+		    {id: "PANTONE 109 C", L: 86.32, a: 6.01, b: 97.68},
+		    {id: "PANTONE 110 C", L: 72.47, a: 9.29, b: 88.24},
+		    {id: "PANTONE 111 C", L: 59.26, a: 4.61, b: 67.74},
+		    {id: "PANTONE 112 C", L: 56.23, a: 2.41, b: 56.34},
+		    {id: "PANTONE 113 C", L: 89.84, a: -1.41, b: 66.66},
+		    {id: "PANTONE 114 C", L: 89.15, a: -0.07, b: 73.41},
+		    {id: "PANTONE 115 C", L: 88.27, a: 1.62, b: 80.24},
+		    {id: "PANTONE 116 C", L: 85.48, a: 8.35, b: 87.98},
+		    {id: "PANTONE 117 C", L: 65.84, a: 12.07, b: 78.3},
+		    {id: "PANTONE 118 C", L: 58.01, a: 8.96, b: 65.86},
+		    {id: "PANTONE 119 C", L: 49.81, a: 2.35, b: 44.64},
+		    {id: "PANTONE 127 C", L: 88.43, a: -0.75, b: 53.84},
+		    {id: "PANTONE 128 C", L: 86.32, a: 1.96, b: 65.17},
+		    {id: "PANTONE 129 C", L: 84.99, a: 3.9, b: 69.37},
+		    {id: "PANTONE 130 C", L: 75.15, a: 22.32, b: 82.28},
+		    {id: "PANTONE 131 C", L: 63.55, a: 20.87, b: 72.69},
+		    {id: "PANTONE 132 C", L: 52.43, a: 12.76, b: 58.95},
+		    {id: "PANTONE 133 C", L: 38.32, a: 4.57, b: 35.81},
+		    {id: "PANTONE 4001 C", L: 87.53, a: -0.13, b: 28.42},
+		    {id: "PANTONE 4002 C", L: 80.8, a: 2.2, b: 34.14},
+		    {id: "PANTONE 4003 C", L: 81.01, a: 0.49, b: 22.44},
+		    {id: "PANTONE 4004 C", L: 75.03, a: 1.29, b: 31.59},
+		    {id: "PANTONE 4005 C", L: 71.57, a: 3.25, b: 24.82},
+		    {id: "PANTONE 4006 C", L: 68.5, a: 5.18, b: 26.49},
+		    {id: "PANTONE 4007 C", L: 63.37, a: 4.81, b: 29.06},
+		    {id: "PANTONE 1205 C", L: 89.82, a: 1.84, b: 39.93},
+		    {id: "PANTONE 1215 C", L: 88.01, a: 4.95, b: 51.78},
+		    {id: "PANTONE 1225 C", L: 84.34, a: 12.33, b: 67.69},
+		    {id: "PANTONE 1235 C", L: 80.71, a: 20.56, b: 77.19},
+		    {id: "PANTONE 1245 C", L: 64.72, a: 13.89, b: 64.48},
+		    {id: "PANTONE 1255 C", L: 58.25, a: 9.86, b: 55.17},
+		    {id: "PANTONE 1265 C", L: 47.43, a: 6.85, b: 41.41},
+		    {id: "PANTONE 120 C", L: 88.63, a: 2.63, b: 57.4},
+		    {id: "PANTONE 121 C", L: 87.89, a: 4.23, b: 63.1},
+		    {id: "PANTONE 122 C", L: 86.47, a: 7.05, b: 70.51},
+		    {id: "PANTONE 123 C", L: 84.08, a: 12.73, b: 75.74},
+		    {id: "PANTONE 124 C", L: 74.7, a: 16.57, b: 79.5},
+		    {id: "PANTONE 125 C", L: 59.22, a: 13.01, b: 65.01},
+		    {id: "PANTONE 126 C", L: 52.3, a: 8.77, b: 54.07},
+		    {id: "PANTONE 7548 C", L: 83.98, a: 13.07, b: 103.6},
+		    {id: "PANTONE 7549 C", L: 79.79, a: 19.51, b: 93.5},
+		    {id: "PANTONE 7550 C", L: 65.28, a: 18.84, b: 76.78},
+		    {id: "PANTONE 7551 C", L: 57.4, a: 15.51, b: 64.05},
+		    {id: "PANTONE 7552 C", L: 38.3, a: 9.6, b: 36.03},
+		    {id: "PANTONE 7553 C", L: 31.22, a: 6.22, b: 24.22},
+		    {id: "PANTONE 7554 C", L: 26.74, a: 4.11, b: 13.49},
+		    {id: "PANTONE 7555 C", L: 69.1, a: 12.46, b: 68.61},
+		    {id: "PANTONE 7556 C", L: 61.15, a: 10.63, b: 58.04},
+		    {id: "PANTONE 7557 C", L: 54.75, a: 7.89, b: 49.62},
+		    {id: "PANTONE 7558 C", L: 51.0, a: 9.91, b: 44.5},
+		    {id: "PANTONE 7559 C", L: 47.97, a: 11.04, b: 39.81},
+		    {id: "PANTONE 7560 C", L: 43.85, a: 7.09, b: 32.41},
+		    {id: "PANTONE 7561 C", L: 40.12, a: 2.58, b: 24.29},
+		    {id: "PANTONE 134 C", L: 86.8, a: 8.32, b: 51.29},
+		    {id: "PANTONE 135 C", L: 84.04, a: 13.98, b: 59.1},
+		    {id: "PANTONE 136 C", L: 82.4, a: 17.46, b: 68.31},
+		    {id: "PANTONE 137 C", L: 76.56, a: 31.13, b: 79.92},
+		    {id: "PANTONE 138 C", L: 62.74, a: 35.03, b: 76.47},
+		    {id: "PANTONE 139 C", L: 52.87, a: 22.73, b: 58.79},
+		    {id: "PANTONE 140 C", L: 38.47, a: 10.31, b: 35.86},
+		    {id: "PANTONE 2008 C", L: 80.72, a: 13.06, b: 44.86},
+		    {id: "PANTONE 2009 C", L: 78.31, a: 16.86, b: 48.75},
+		    {id: "PANTONE 2010 C", L: 78.86, a: 26.97, b: 99.48},
+		    {id: "PANTONE 2011 C", L: 71.57, a: 28.56, b: 62.45},
+		    {id: "PANTONE 2012 C", L: 70.46, a: 30.63, b: 77.67},
+		    {id: "PANTONE 2013 C", L: 74.57, a: 38.23, b: 95.08},
+		    {id: "PANTONE 2014 C", L: 54.33, a: 25.47, b: 67.15},
+		    {id: "PANTONE 1345 C", L: 86.57, a: 10.83, b: 39.57},
+		    {id: "PANTONE 1355 C", L: 84.2, a: 15.36, b: 48.35},
+		    {id: "PANTONE 1365 C", L: 80.35, a: 23.17, b: 62.0},
+		    {id: "PANTONE 1375 C", L: 75.21, a: 34.33, b: 74.39},
+		    {id: "PANTONE 1385 C", L: 61.1, a: 32.98, b: 67.45},
+		    {id: "PANTONE 1395 C", L: 46.36, a: 20.53, b: 47.64},
+		    {id: "PANTONE 1405 C", L: 35.4, a: 12.1, b: 32.34},
+		    {id: "PANTONE 141 C", L: 82.79, a: 8.86, b: 55.51},
+		    {id: "PANTONE 142 C", L: 80.5, a: 12.54, b: 61.66},
+		    {id: "PANTONE 143 C", L: 78.01, a: 16.9, b: 67.0},
+		    {id: "PANTONE 144 C", L: 68.22, a: 35.45, b: 75.15},
+		    {id: "PANTONE 145 C", L: 61.59, a: 28.46, b: 67.82},
+		    {id: "PANTONE 146 C", L: 51.66, a: 20.79, b: 54.49},
+		    {id: "PANTONE 147 C", L: 40.91, a: 5.22, b: 30.43},
+		    {id: "PANTONE 4008 C", L: 77.24, a: 19.6, b: 71.81},
+		    {id: "PANTONE 4009 C", L: 72.72, a: 28.72, b: 53.23},
+		    {id: "PANTONE 4010 C", L: 60.28, a: 47.46, b: 64.76},
+		    {id: "PANTONE 4011 C", L: 61.99, a: 42.68, b: 39.68},
+		    {id: "PANTONE 4012 C", L: 63.17, a: 45.87, b: 49.33},
+		    {id: "PANTONE 4013 C", L: 57.11, a: 36.05, b: 52.21},
+		    {id: "PANTONE 4014 C", L: 53.31, a: 32.64, b: 30.06},
+		    {id: "PANTONE 3514 C", L: 78.96, a: 14.42, b: 91.65},
+		    {id: "PANTONE 3596 C", L: 78.2, a: 8.76, b: 29.09},
+		    {id: "PANTONE 3547 C", L: 63.97, a: 14.86, b: 64.37},
+		    {id: "PANTONE 3588 C", L: 72.68, a: 37.67, b: 70.7},
+		    {id: "PANTONE 3564 C", L: 62.04, a: 49.48, b: 94.1},
+		    {id: "PANTONE 2428 C", L: 65.57, a: 29.23, b: 58.57},
+		    {id: "PANTONE 2429 C", L: 52.53, a: 38.88, b: 53.15},
+		    {id: "PANTONE 4015 C", L: 79.82, a: -3.25, b: 47.45},
+		    {id: "PANTONE 4016 C", L: 77.7, a: -0.82, b: 63.33},
+		    {id: "PANTONE 4017 C", L: 76.98, a: 5.58, b: 62.19},
+		    {id: "PANTONE 4018 C", L: 74.18, a: 3.77, b: 53.53},
+		    {id: "PANTONE 4019 C", L: 70.1, a: 3.02, b: 46.72},
+		    {id: "PANTONE 4020 C", L: 67.11, a: 3.78, b: 72.87},
+		    {id: "PANTONE 4021 C", L: 62.52, a: 4.56, b: 49.64},
+		    {id: "PANTONE 7408 C", L: 80.9, a: 12.32, b: 81.55},
+		    {id: "PANTONE 7409 C", L: 77.56, a: 16.65, b: 72.76},
+		    {id: "PANTONE 7410 C", L: 78.6, a: 26.83, b: 38.13},
+		    {id: "PANTONE 7411 C", L: 73.46, a: 21.48, b: 44.8},
+		    {id: "PANTONE 7412 C", L: 62.57, a: 28.11, b: 52.3},
+		    {id: "PANTONE 7413 C", L: 64.76, a: 32.33, b: 55.61},
+		    {id: "PANTONE 7414 C", L: 55.41, a: 30.71, b: 55.76},
+		    {id: "PANTONE 7562 C", L: 66.45, a: 7.95, b: 33.97},
+		    {id: "PANTONE 7563 C", L: 68.75, a: 16.89, b: 60.79},
+		    {id: "PANTONE 7564 C", L: 65.55, a: 26.75, b: 68.65},
+		    {id: "PANTONE 7565 C", L: 59.92, a: 29.46, b: 55.96},
+		    {id: "PANTONE 7566 C", L: 50.93, a: 28.33, b: 39.6},
+		    {id: "PANTONE 7567 C", L: 41.62, a: 21.33, b: 29.8},
+		    {id: "PANTONE 7568 C", L: 38.67, a: 15.25, b: 22.23},
+		    {id: "PANTONE 7569 C", L: 64.56, a: 26.95, b: 60.23},
+		    {id: "PANTONE 7570 C", L: 63.0, a: 28.52, b: 56.6},
+		    {id: "PANTONE 7571 C", L: 59.87, a: 25.57, b: 50.81},
+		    {id: "PANTONE 7572 C", L: 55.13, a: 24.8, b: 44.38},
+		    {id: "PANTONE 7573 C", L: 50.13, a: 24.43, b: 42.61},
+		    {id: "PANTONE 7574 C", L: 49.99, a: 18.59, b: 35.42},
+		    {id: "PANTONE 7575 C", L: 43.01, a: 13.25, b: 29.97},
+		    {id: "PANTONE 4022 C", L: 74.76, a: 6.47, b: 27.67},
+		    {id: "PANTONE 4023 C", L: 74.99, a: 5.34, b: 40.14},
+		    {id: "PANTONE 4024 C", L: 73.5, a: 9.64, b: 38.54},
+		    {id: "PANTONE 4025 C", L: 70.43, a: 16.31, b: 50.37},
+		    {id: "PANTONE 4026 C", L: 62.31, a: 14.99, b: 46.02},
+		    {id: "PANTONE 4027 C", L: 46.13, a: 13.57, b: 42.05},
+		    {id: "PANTONE 4028 C", L: 43.82, a: 10.78, b: 34.21},
+		    {id: "PANTONE 4029 C", L: 84.27, a: 7.59, b: 19.28},
+		    {id: "PANTONE 4030 C", L: 84.65, a: 12.67, b: 15.86},
+		    {id: "PANTONE 4031 C", L: 84.44, a: 11.96, b: 7.91},
+		    {id: "PANTONE 4032 C", L: 85.41, a: 16.07, b: 7.09},
+		    {id: "PANTONE 4033 C", L: 81.98, a: 21.55, b: 13.21},
+		    {id: "PANTONE 4034 C", L: 67.02, a: 19.84, b: 21.96},
+		    {id: "PANTONE 4035 C", L: 66.5, a: 18.53, b: 21.93},
+		    {id: "PANTONE 148 C", L: 85.7, a: 13.84, b: 35.9},
+		    {id: "PANTONE 149 C", L: 83.61, a: 17.87, b: 42.0},
+		    {id: "PANTONE 150 C", L: 79.86, a: 25.53, b: 53.88},
+		    {id: "PANTONE 151 C", L: 69.74, a: 47.38, b: 77.03},
+		    {id: "PANTONE 152 C", L: 62.01, a: 43.12, b: 71.09},
+		    {id: "PANTONE 153 C", L: 54.34, a: 31.04, b: 57.18},
+		    {id: "PANTONE 154 C", L: 45.24, a: 24.7, b: 46.0},
+		    {id: "PANTONE 155 C", L: 85.78, a: 7.7, b: 25.44},
+		    {id: "PANTONE 156 C", L: 80.57, a: 14.76, b: 36.8},
+		    {id: "PANTONE 157 C", L: 73.17, a: 26.43, b: 48.85},
+		    {id: "PANTONE 158 C", L: 63.49, a: 44.02, b: 61.92},
+		    {id: "PANTONE 159 C", L: 54.46, a: 43.41, b: 57.84},
+		    {id: "PANTONE 160 C", L: 45.64, a: 30.95, b: 45.3},
+		    {id: "PANTONE 161 C", L: 30.15, a: 14.55, b: 24.25},
+		    {id: "PANTONE 1485 C", L: 79.64, a: 29.96, b: 50.94},
+		    {id: "PANTONE 1495 C", L: 73.53, a: 43.66, b: 73.59},
+		    {id: "PANTONE 1505 C", L: 66.04, a: 59.06, b: 92.69},
+		    {id: "PANTONE Orange 021 C", L: 60.91, a: 65.63, b: 85.02},
+		    {id: "PANTONE 1525 C", L: 46.91, a: 45.54, b: 62.26},
+		    {id: "PANTONE 1535 C", L: 39.91, a: 32.04, b: 46.8},
+		    {id: "PANTONE 1545 C", L: 28.95, a: 18.85, b: 28.23},
+		    {id: "PANTONE 1555 C", L: 81.89, a: 24.49, b: 28.57},
+		    {id: "PANTONE 1565 C", L: 76.48, a: 35.46, b: 42.43},
+		    {id: "PANTONE 1575 C", L: 69.5, a: 49.54, b: 62.46},
+		    {id: "PANTONE 1585 C", L: 65.44, a: 57.05, b: 70.0},
+		    {id: "PANTONE 1595 C", L: 56.63, a: 46.42, b: 59.0},
+		    {id: "PANTONE 1605 C", L: 46.27, a: 32.42, b: 42.95},
+		    {id: "PANTONE 1615 C", L: 39.06, a: 27.76, b: 36.15},
+		    {id: "PANTONE 712 C", L: 85.0, a: 15.29, b: 28.36},
+		    {id: "PANTONE 713 C", L: 82.5, a: 19.27, b: 35.03},
+		    {id: "PANTONE 714 C", L: 77.33, a: 27.06, b: 47.58},
+		    {id: "PANTONE 715 C", L: 69.86, a: 36.71, b: 64.4},
+		    {id: "PANTONE 716 C", L: 63.5, a: 42.31, b: 72.16},
+		    {id: "PANTONE 717 C", L: 55.26, a: 45.27, b: 69.15},
+		    {id: "PANTONE 718 C", L: 48.95, a: 44.55, b: 61.14},
+		    {id: "PANTONE 2015 C", L: 86.31, a: 11.83, b: 21.78},
+		    {id: "PANTONE 2016 C", L: 81.38, a: 25.91, b: 45.08},
+		    {id: "PANTONE 2017 C", L: 77.41, a: 23.95, b: 42.29},
+		    {id: "PANTONE 2018 C", L: 68.3, a: 54.19, b: 87.66},
+		    {id: "PANTONE 2019 C", L: 58.27, a: 39.86, b: 68.28},
+		    {id: "PANTONE 2020 C", L: 49.96, a: 40.87, b: 62.47},
+		    {id: "PANTONE 2021 C", L: 42.1, a: 34.11, b: 45.9},
+		    {id: "PANTONE 2022 C", L: 77.58, a: 29.48, b: 25.31},
+		    {id: "PANTONE 2023 C", L: 72.28, a: 38.79, b: 33.94},
+		    {id: "PANTONE 2024 C", L: 67.09, a: 48.13, b: 42.04},
+		    {id: "PANTONE 2025 C", L: 72.21, a: 46.48, b: 60.88},
+		    {id: "PANTONE 2026 C", L: 61.95, a: 57.3, b: 51.34},
+		    {id: "PANTONE 2027 C", L: 58.39, a: 62.17, b: 44.36},
+		    {id: "PANTONE 2028 C", L: 54.05, a: 70.13, b: 69.17},
+		    {id: "PANTONE 162 C", L: 83.1, a: 22.89, b: 22.26},
+		    {id: "PANTONE 163 C", L: 75.88, a: 37.13, b: 39.33},
+		    {id: "PANTONE 164 C", L: 69.64, a: 49.94, b: 55.32},
+		    {id: "PANTONE 165 C", L: 64.72, a: 58.67, b: 66.41},
+		    {id: "PANTONE 166 C", L: 56.4, a: 56.23, b: 65.22},
+		    {id: "PANTONE 167 C", L: 49.92, a: 42.82, b: 51.22},
+		    {id: "PANTONE 168 C", L: 31.8, a: 25.1, b: 28.77},
+		    {id: "PANTONE 7576 C", L: 64.64, a: 31.65, b: 42.45},
+		    {id: "PANTONE 7577 C", L: 63.6, a: 36.89, b: 50.43},
+		    {id: "PANTONE 7578 C", L: 58.99, a: 43.88, b: 52.15},
+		    {id: "PANTONE 7579 C", L: 55.88, a: 52.27, b: 51.99},
+		    {id: "PANTONE 7580 C", L: 49.74, a: 45.23, b: 40.97},
+		    {id: "PANTONE 7581 C", L: 38.94, a: 25.46, b: 24.2},
+		    {id: "PANTONE 7582 C", L: 33.87, a: 12.88, b: 15.57},
+		    {id: "PANTONE 2430 C", L: 71.42, a: 17.72, b: 26.59},
+		    {id: "PANTONE 2431 C", L: 68.24, a: 25.36, b: 43.89},
+		    {id: "PANTONE 2432 C", L: 66.87, a: 29.14, b: 38.96},
+		    {id: "PANTONE 2433 C", L: 62.57, a: 36.51, b: 38.64},
+		    {id: "PANTONE 2434 C", L: 63.42, a: 41.83, b: 32.62},
+		    {id: "PANTONE 2435 C", L: 56.82, a: 31.89, b: 25.88},
+		    {id: "PANTONE 2436 C", L: 48.72, a: 40.68, b: 31.86},
+		    {id: "PANTONE 1625 C", L: 77.54, a: 35.89, b: 26.05},
+		    {id: "PANTONE 1635 C", L: 72.73, a: 45.22, b: 36.18},
+		    {id: "PANTONE 1645 C", L: 65.76, a: 58.39, b: 55.85},
+		    {id: "PANTONE 1655 C", L: 60.16, a: 66.94, b: 70.6},
+		    {id: "PANTONE 1665 C", L: 53.11, a: 59.5, b: 63.37},
+		    {id: "PANTONE 1675 C", L: 43.48, a: 42.18, b: 43.45},
+		    {id: "PANTONE 1685 C", L: 34.75, a: 32.05, b: 31.59},
+		    {id: "PANTONE 169 C", L: 81.22, a: 29.83, b: 12.81},
+		    {id: "PANTONE 170 C", L: 71.59, a: 48.94, b: 30.92},
+		    {id: "PANTONE 171 C", L: 63.42, a: 63.57, b: 53.59},
+		    {id: "PANTONE 172 C", L: 59.3, a: 68.56, b: 65.3},
+		    {id: "PANTONE 173 C", L: 50.75, a: 55.15, b: 51.2},
+		    {id: "PANTONE 174 C", L: 38.05, a: 39.73, b: 34.77},
+		    {id: "PANTONE 175 C", L: 29.95, a: 24.09, b: 18.87},
+		    {id: "PANTONE 7583 C", L: 54.04, a: 39.9, b: 46.35},
+		    {id: "PANTONE 7584 C", L: 50.16, a: 40.88, b: 46.54},
+		    {id: "PANTONE 7585 C", L: 49.56, a: 35.06, b: 35.49},
+		    {id: "PANTONE 7586 C", L: 44.59, a: 32.24, b: 34.22},
+		    {id: "PANTONE 7587 C", L: 41.3, a: 30.39, b: 30.7},
+		    {id: "PANTONE 7588 C", L: 37.83, a: 19.97, b: 21.24},
+		    {id: "PANTONE 7589 C", L: 32.45, a: 8.63, b: 11.61},
+		    {id: "PANTONE 7590 C", L: 76.12, a: 10.76, b: 12.85},
+		    {id: "PANTONE 7591 C", L: 59.34, a: 26.77, b: 28.94},
+		    {id: "PANTONE 7592 C", L: 47.99, a: 39.14, b: 36.78},
+		    {id: "PANTONE 7593 C", L: 41.5, a: 39.68, b: 32.31},
+		    {id: "PANTONE 7594 C", L: 33.96, a: 30.2, b: 21.82},
+		    {id: "PANTONE 7595 C", L: 31.71, a: 21.16, b: 17.47},
+		    {id: "PANTONE 7596 C", L: 29.37, a: 14.1, b: 12.29},
+		    {id: "PANTONE 7597 C", L: 50.68, a: 58.01, b: 49.26},
+		    {id: "PANTONE 7598 C", L: 48.04, a: 48.57, b: 41.89},
+		    {id: "PANTONE 7599 C", L: 44.44, a: 49.14, b: 40.45},
+		    {id: "PANTONE 7600 C", L: 37.49, a: 33.91, b: 28.0},
+		    {id: "PANTONE 7601 C", L: 36.26, a: 28.29, b: 25.91},
+		    {id: "PANTONE 7602 C", L: 36.92, a: 20.42, b: 22.87},
+		    {id: "PANTONE 7603 C", L: 32.41, a: 15.86, b: 17.07},
+		    {id: "PANTONE 7604 C", L: 86.52, a: 6.5, b: -0.8},
+		    {id: "PANTONE 7605 C", L: 79.25, a: 15.45, b: 5.9},
+		    {id: "PANTONE 7606 C", L: 67.82, a: 27.84, b: 13.39},
+		    {id: "PANTONE 7607 C", L: 56.38, a: 36.04, b: 21.59},
+		    {id: "PANTONE 7608 C", L: 43.8, a: 39.94, b: 25.75},
+		    {id: "PANTONE 7609 C", L: 35.21, a: 33.18, b: 19.29},
+		    {id: "PANTONE 7610 C", L: 29.19, a: 25.19, b: 12.56},
+		    {id: "PANTONE 3544 C", L: 78.05, a: 13.11, b: 14.52},
+		    {id: "PANTONE 2444 C", L: 73.5, a: 21.07, b: 10.52},
+		    {id: "PANTONE 3519 C", L: 74.35, a: 24.59, b: 5.79},
+		    {id: "PANTONE 3572 C", L: 76.42, a: 40.02, b: 15.75},
+		    {id: "PANTONE 2445 C", L: 66.39, a: 36.2, b: 9.9},
+		    {id: "PANTONE 2446 C", L: 64.45, a: 31.61, b: 7.54},
+		    {id: "PANTONE 2447 C", L: 54.58, a: 28.87, b: 5.64},
+		    {id: "PANTONE 2337 C", L: 83.33, a: 21.07, b: 8.86},
+		    {id: "PANTONE 2338 C", L: 72.97, a: 23.44, b: 9.91},
+		    {id: "PANTONE 2339 C", L: 71.68, a: 37.12, b: 14.69},
+		    {id: "PANTONE 2340 C", L: 59.15, a: 40.45, b: 12.04},
+		    {id: "PANTONE 2341 C", L: 54.83, a: 31.02, b: 11.17},
+		    {id: "PANTONE 2342 C", L: 50.72, a: 40.38, b: 10.74},
+		    {id: "PANTONE 2343 C", L: 47.8, a: 37.2, b: 5.64},
+		    {id: "PANTONE 4036 C", L: 67.39, a: 15.67, b: 3.83},
+		    {id: "PANTONE 4037 C", L: 58.51, a: 22.2, b: 10.96},
+		    {id: "PANTONE 4038 C", L: 55.66, a: 25.66, b: 14.21},
+		    {id: "PANTONE 4039 C", L: 52.53, a: 28.66, b: 15.13},
+		    {id: "PANTONE 4040 C", L: 49.77, a: 18.0, b: 8.48},
+		    {id: "PANTONE 4041 C", L: 43.92, a: 15.71, b: 6.98},
+		    {id: "PANTONE 4042 C", L: 42.62, a: 12.07, b: 8.54},
+		    {id: "PANTONE 7611 C", L: 79.13, a: 12.13, b: 7.96},
+		    {id: "PANTONE 7612 C", L: 68.38, a: 18.43, b: 11.85},
+		    {id: "PANTONE 7613 C", L: 62.51, a: 20.05, b: 12.29},
+		    {id: "PANTONE 7614 C", L: 56.68, a: 14.58, b: 9.94},
+		    {id: "PANTONE 7615 C", L: 47.0, a: 13.05, b: 7.18},
+		    {id: "PANTONE 7616 C", L: 36.12, a: 14.08, b: 4.88},
+		    {id: "PANTONE 7617 C", L: 29.05, a: 12.92, b: 3.84},
+		    {id: "PANTONE 7520 C", L: 81.07, a: 15.92, b: 10.2},
+		    {id: "PANTONE 7521 C", L: 67.65, a: 13.58, b: 15.99},
+		    {id: "PANTONE 7522 C", L: 53.33, a: 31.08, b: 23.89},
+		    {id: "PANTONE 7523 C", L: 49.09, a: 33.28, b: 17.01},
+		    {id: "PANTONE 7524 C", L: 45.41, a: 34.81, b: 21.48},
+		    {id: "PANTONE 7525 C", L: 49.66, a: 20.19, b: 20.73},
+		    {id: "PANTONE 7526 C", L: 36.02, a: 34.12, b: 35.33},
+		    {id: "PANTONE 2437 C", L: 81.77, a: 16.71, b: 20.58},
+		    {id: "PANTONE 2438 C", L: 72.98, a: 23.79, b: 22.79},
+		    {id: "PANTONE 2439 C", L: 62.3, a: 24.38, b: 19.05},
+		    {id: "PANTONE 2440 C", L: 64.02, a: 14.08, b: 7.67},
+		    {id: "PANTONE 2441 C", L: 53.34, a: 22.68, b: 17.14},
+		    {id: "PANTONE 2442 C", L: 48.25, a: 27.14, b: 16.91},
+		    {id: "PANTONE 2443 C", L: 37.01, a: 36.27, b: 32.27},
+		    {id: "PANTONE 4043 C", L: 81.55, a: 9.49, b: 11.02},
+		    {id: "PANTONE 4044 C", L: 69.49, a: 12.97, b: 13.81},
+		    {id: "PANTONE 4045 C", L: 65.42, a: 13.28, b: 12.92},
+		    {id: "PANTONE 4046 C", L: 64.79, a: 9.94, b: 12.5},
+		    {id: "PANTONE 4047 C", L: 60.91, a: 11.15, b: 14.03},
+		    {id: "PANTONE 4048 C", L: 57.21, a: 10.48, b: 15.78},
+		    {id: "PANTONE 4049 C", L: 56.11, a: 7.64, b: 11.51},
+		    {id: "PANTONE 489 C", L: 82.55, a: 15.22, b: 11.25},
+		    {id: "PANTONE 488 C", L: 80.05, a: 18.98, b: 12.94},
+		    {id: "PANTONE 487 C", L: 75.43, a: 26.16, b: 17.53},
+		    {id: "PANTONE 486 C", L: 69.83, a: 35.26, b: 23.92},
+		    {id: "PANTONE 485 C", L: 49.88, a: 69.06, b: 53.87},
+		    {id: "PANTONE 484 C", L: 38.13, a: 45.25, b: 33.76},
+		    {id: "PANTONE 483 C", L: 27.94, a: 24.83, b: 18.68},
+		    {id: "PANTONE 2029 C", L: 67.8, a: 45.64, b: 20.23},
+		    {id: "PANTONE 2030 C", L: 63.1, a: 41.43, b: 19.19},
+		    {id: "PANTONE 2031 C", L: 58.44, a: 45.76, b: 21.93},
+		    {id: "PANTONE 2032 C", L: 54.56, a: 49.59, b: 25.14},
+		    {id: "PANTONE 2033 C", L: 49.28, a: 53.39, b: 29.61},
+		    {id: "PANTONE 2034 C", L: 54.31, a: 68.02, b: 40.58},
+		    {id: "PANTONE 2035 C", L: 47.03, a: 73.67, b: 52.04},
+		    {id: "PANTONE 2344 C", L: 67.42, a: 43.96, b: 28.12},
+		    {id: "PANTONE 2345 C", L: 67.54, a: 59.82, b: 32.32},
+		    {id: "PANTONE 2346 C", L: 64.15, a: 67.46, b: 28.96},
+		    {id: "PANTONE 2347 C", L: 49.48, a: 75.22, b: 67.23},
+		    {id: "PANTONE 2348 C", L: 57.48, a: 58.39, b: 34.26},
+		    {id: "PANTONE 2349 C", L: 48.11, a: 59.14, b: 59.06},
+		    {id: "PANTONE 2350 C", L: 40.35, a: 57.15, b: 42.58},
+		    {id: "PANTONE 4050 C", L: 74.38, a: 17.29, b: 14.26},
+		    {id: "PANTONE 4051 C", L: 66.67, a: 34.82, b: 21.12},
+		    {id: "PANTONE 4052 C", L: 66.06, a: 33.06, b: 19.45},
+		    {id: "PANTONE 4053 C", L: 61.44, a: 35.11, b: 21.74},
+		    {id: "PANTONE 4054 C", L: 46.72, a: 36.21, b: 26.99},
+		    {id: "PANTONE 4055 C", L: 46.16, a: 34.68, b: 24.05},
+		    {id: "PANTONE 4056 C", L: 40.84, a: 24.59, b: 13.98},
+		    {id: "PANTONE 4057 C", L: 59.98, a: 51.07, b: 28.69},
+		    {id: "PANTONE 4058 C", L: 56.01, a: 61.2, b: 27.89},
+		    {id: "PANTONE 4059 C", L: 45.52, a: 59.58, b: 25.34},
+		    {id: "PANTONE 4060 C", L: 45.65, a: 57.07, b: 24.39},
+		    {id: "PANTONE 4061 C", L: 53.38, a: 38.4, b: 17.88},
+		    {id: "PANTONE 4062 C", L: 44.03, a: 43.17, b: 20.38},
+		    {id: "PANTONE 4063 C", L: 40.5, a: 39.67, b: 25.87},
+		    {id: "PANTONE 176 C", L: 81.19, a: 32.07, b: 3.97},
+		    {id: "PANTONE 177 C", L: 70.79, a: 52.99, b: 17.52},
+		    {id: "PANTONE 178 C", L: 63.21, a: 65.86, b: 34.52},
+		    {id: "PANTONE Warm Red C", L: 58.89, a: 70.04, b: 48.16},
+		    {id: "PANTONE 179 C", L: 53.02, a: 63.87, b: 45.9},
+		    {id: "PANTONE 180 C", L: 46.43, a: 53.52, b: 35.17},
+		    {id: "PANTONE 181 C", L: 33.15, a: 35.18, b: 20.21},
+		    {id: "PANTONE 1765 C", L: 77.68, a: 37.91, b: 3.19},
+		    {id: "PANTONE 1775 C", L: 72.87, a: 46.91, b: 7.42},
+		    {id: "PANTONE 1785 C", L: 59.58, a: 69.17, b: 28.86},
+		    {id: "PANTONE 1788 C", L: 53.92, a: 74.29, b: 44.91},
+		    {id: "PANTONE 1795 C", L: 48.15, a: 66.28, b: 40.99},
+		    {id: "PANTONE 1805 C", L: 40.74, a: 55.39, b: 31.61},
+		    {id: "PANTONE 1815 C", L: 30.36, a: 38.65, b: 19.89},
+		    {id: "PANTONE 1767 C", L: 79.84, a: 32.09, b: -0.06},
+		    {id: "PANTONE 1777 C", L: 63.97, a: 62.38, b: 16.25},
+		    {id: "PANTONE 1787 C", L: 56.74, a: 72.74, b: 35.52},
+		    {id: "PANTONE Red 032 C", L: 55.29, a: 72.25, b: 41.33},
+		    {id: "PANTONE 1797 C", L: 48.13, a: 61.07, b: 33.12},
+		    {id: "PANTONE 1807 C", L: 40.14, a: 47.75, b: 23.49},
+		    {id: "PANTONE 1817 C", L: 28.43, a: 23.19, b: 9.23},
+		    {id: "PANTONE 2448 C", L: 57.87, a: 47.93, b: 31.47},
+		    {id: "PANTONE 3556 C", L: 55.34, a: 69.72, b: 51.48},
+		    {id: "PANTONE 3516 C", L: 51.21, a: 64.53, b: 59.94},
+		    {id: "PANTONE 3546 C", L: 44.39, a: 73.01, b: 51.88},
+		    {id: "PANTONE 3517 C", L: 40.38, a: 73.67, b: 48.31},
+		    {id: "PANTONE 3523 C", L: 30.21, a: 32.18, b: 13.73},
+		    {id: "PANTONE 2449 C", L: 19.63, a: 17.9, b: 6.4},
+		    {id: "PANTONE 7618 C", L: 56.9, a: 36.08, b: 32.43},
+		    {id: "PANTONE 7619 C", L: 49.36, a: 49.37, b: 37.2},
+		    {id: "PANTONE 7620 C", L: 43.69, a: 56.38, b: 36.92},
+		    {id: "PANTONE 7621 C", L: 39.66, a: 56.67, b: 34.28},
+		    {id: "PANTONE 7622 C", L: 35.33, a: 47.37, b: 25.41},
+		    {id: "PANTONE 7623 C", L: 33.66, a: 43.27, b: 24.25},
+		    {id: "PANTONE 7624 C", L: 32.55, a: 37.5, b: 20.84},
+		    {id: "PANTONE 7625 C", L: 56.21, a: 58.68, b: 42.31},
+		    {id: "PANTONE 7626 C", L: 47.29, a: 57.78, b: 44.16},
+		    {id: "PANTONE 7627 C", L: 39.47, a: 51.55, b: 33.02},
+		    {id: "PANTONE 7628 C", L: 37.86, a: 48.7, b: 29.43},
+		    {id: "PANTONE 7629 C", L: 29.66, a: 26.69, b: 13.29},
+		    {id: "PANTONE 7630 C", L: 27.77, a: 22.8, b: 11.08},
+		    {id: "PANTONE 7631 C", L: 24.53, a: 19.89, b: 8.67},
+		    {id: "PANTONE 7415 C", L: 79.3, a: 16.83, b: 13.07},
+		    {id: "PANTONE 7416 C", L: 60.98, a: 50.47, b: 35.62},
+		    {id: "PANTONE 7417 C", L: 55.48, a: 60.13, b: 44.54},
+		    {id: "PANTONE 7418 C", L: 53.42, a: 50.32, b: 20.87},
+		    {id: "PANTONE 7419 C", L: 46.71, a: 43.19, b: 12.09},
+		    {id: "PANTONE 7420 C", L: 36.31, a: 51.73, b: 13.5},
+		    {id: "PANTONE 7421 C", L: 24.08, a: 35.62, b: 5.45},
+		    {id: "PANTONE 182 C", L: 82.93, a: 26.3, b: -2.79},
+		    {id: "PANTONE 183 C", L: 75.54, a: 40.52, b: 0.64},
+		    {id: "PANTONE 184 C", L: 60.69, a: 66.57, b: 16.28},
+		    {id: "PANTONE 185 C", L: 49.82, a: 77.58, b: 47.17},
+		    {id: "PANTONE 186 C", L: 44.87, a: 67.73, b: 37.45},
+		    {id: "PANTONE 187 C", L: 37.73, a: 56.68, b: 28.05},
+		    {id: "PANTONE 188 C", L: 28.85, a: 37.88, b: 13.8},
+		    {id: "PANTONE 4064 C", L: 78.98, a: 23.53, b: -0.26},
+		    {id: "PANTONE 4065 C", L: 76.76, a: 23.14, b: 2.11},
+		    {id: "PANTONE 4066 C", L: 73.93, a: 30.19, b: 10.42},
+		    {id: "PANTONE 4067 C", L: 73.24, a: 30.43, b: 8.48},
+		    {id: "PANTONE 4068 C", L: 69.35, a: 35.65, b: 8.64},
+		    {id: "PANTONE 4069 C", L: 51.47, a: 51.33, b: 14.5},
+		    {id: "PANTONE 4070 C", L: 45.05, a: 51.84, b: 15.13},
+		    {id: "PANTONE 196 C", L: 83.9, a: 16.34, b: -2.16},
+		    {id: "PANTONE 197 C", L: 73.15, a: 33.9, b: -0.29},
+		    {id: "PANTONE 198 C", L: 54.56, a: 64.33, b: 19.37},
+		    {id: "PANTONE 199 C", L: 46.85, a: 74.18, b: 38.78},
+		    {id: "PANTONE 200 C", L: 41.4, a: 65.73, b: 32.93},
+		    {id: "PANTONE 201 C", L: 36.78, a: 53.02, b: 21.77},
+		    {id: "PANTONE 202 C", L: 32.6, a: 43.72, b: 16.45},
+		    {id: "PANTONE 189 C", L: 76.84, a: 36.77, b: -2.33},
+		    {id: "PANTONE 190 C", L: 66.63, a: 55.01, b: 3.32},
+		    {id: "PANTONE 191 C", L: 57.65, a: 69.75, b: 15.14},
+		    {id: "PANTONE 192 C", L: 50.61, a: 77.33, b: 31.54},
+		    {id: "PANTONE 193 C", L: 42.96, a: 66.25, b: 25.31},
+		    {id: "PANTONE 194 C", L: 37.01, a: 50.28, b: 13.14},
+		    {id: "PANTONE 195 C", L: 31.25, a: 34.5, b: 6.4},
+		    {id: "PANTONE 1895 C", L: 81.1, a: 27.7, b: -6.17},
+		    {id: "PANTONE 1905 C", L: 74.78, a: 39.6, b: -4.97},
+		    {id: "PANTONE 1915 C", L: 58.78, a: 67.81, b: 6.63},
+		    {id: "PANTONE 1925 C", L: 49.35, a: 78.02, b: 25.82},
+		    {id: "PANTONE 1935 C", L: 43.17, a: 70.51, b: 26.0},
+		    {id: "PANTONE 1945 C", L: 37.19, a: 60.02, b: 17.2},
+		    {id: "PANTONE 1955 C", L: 31.46, a: 50.07, b: 12.45},
+		    {id: "PANTONE 705 C", L: 89.67, a: 11.81, b: -3.5},
+		    {id: "PANTONE 706 C", L: 86.89, a: 17.21, b: -3.04},
+		    {id: "PANTONE 707 C", L: 81.09, a: 28.14, b: -0.81},
+		    {id: "PANTONE 708 C", L: 72.33, a: 43.07, b: 5.82},
+		    {id: "PANTONE 709 C", L: 61.67, a: 58.48, b: 15.57},
+		    {id: "PANTONE 710 C", L: 53.62, a: 64.68, b: 28.38},
+		    {id: "PANTONE 711 C", L: 47.12, a: 62.9, b: 40.43},
+		    {id: "PANTONE 698 C", L: 87.83, a: 12.2, b: -0.73},
+		    {id: "PANTONE 699 C", L: 83.59, a: 20.52, b: -0.8},
+		    {id: "PANTONE 700 C", L: 77.8, a: 29.23, b: 1.94},
+		    {id: "PANTONE 701 C", L: 67.69, a: 40.46, b: 4.96},
+		    {id: "PANTONE 702 C", L: 55.89, a: 50.56, b: 11.1},
+		    {id: "PANTONE 703 C", L: 45.47, a: 53.23, b: 20.05},
+		    {id: "PANTONE 704 C", L: 37.78, a: 48.95, b: 26.76},
+		    {id: "PANTONE 203 C", L: 79.38, a: 26.32, b: -7.82},
+		    {id: "PANTONE 204 C", L: 67.44, a: 46.27, b: -5.65},
+		    {id: "PANTONE 205 C", L: 55.15, a: 66.14, b: 4.22},
+		    {id: "PANTONE 206 C", L: 44.14, a: 76.24, b: 32.89},
+		    {id: "PANTONE 207 C", L: 36.09, a: 61.76, b: 21.99},
+		    {id: "PANTONE 208 C", L: 32.01, a: 46.91, b: 5.9},
+		    {id: "PANTONE 209 C", L: 27.51, a: 35.57, b: 3.25},
+		    {id: "PANTONE 210 C", L: 76.14, a: 40.32, b: -10.41},
+		    {id: "PANTONE 211 C", L: 68.87, a: 52.95, b: -10.07},
+		    {id: "PANTONE 212 C", L: 59.94, a: 68.13, b: -5.43},
+		    {id: "PANTONE 213 C", L: 52.28, a: 75.73, b: 2.25},
+		    {id: "PANTONE 214 C", L: 47.12, a: 71.26, b: 4.0},
+		    {id: "PANTONE 215 C", L: 39.66, a: 60.69, b: 2.15},
+		    {id: "PANTONE 216 C", L: 30.48, a: 42.63, b: 0.0},
+		    {id: "PANTONE 2036 C", L: 83.08, a: 25.7, b: -7.58},
+		    {id: "PANTONE 2037 C", L: 73.61, a: 42.75, b: -12.79},
+		    {id: "PANTONE 2038 C", L: 62.42, a: 61.93, b: -8.23},
+		    {id: "PANTONE 2039 C", L: 55.08, a: 71.24, b: -2.91},
+		    {id: "PANTONE 2040 C", L: 48.97, a: 74.52, b: 16.5},
+		    {id: "PANTONE 2041 C", L: 37.74, a: 53.82, b: 7.6},
+		    {id: "PANTONE 2042 C", L: 27.96, a: 34.38, b: 4.24},
+		    {id: "PANTONE 7422 C", L: 86.35, a: 15.91, b: -1.06},
+		    {id: "PANTONE 7423 C", L: 59.71, a: 53.98, b: 4.13},
+		    {id: "PANTONE 7424 C", L: 55.98, a: 65.41, b: 0.19},
+		    {id: "PANTONE 7425 C", L: 42.44, a: 59.87, b: 9.91},
+		    {id: "PANTONE 7426 C", L: 37.24, a: 58.41, b: 16.0},
+		    {id: "PANTONE 7427 C", L: 34.47, a: 53.02, b: 23.17},
+		    {id: "PANTONE 7428 C", L: 28.3, a: 31.2, b: 2.31},
+		    {id: "PANTONE 4071 C", L: 65.09, a: 32.71, b: -3.11},
+		    {id: "PANTONE 4072 C", L: 64.43, a: 45.15, b: -1.36},
+		    {id: "PANTONE 4073 C", L: 50.66, a: 55.28, b: 2.46},
+		    {id: "PANTONE 4074 C", L: 29.62, a: 45.94, b: -2.72},
+		    {id: "PANTONE 4075 C", L: 34.58, a: 38.03, b: -0.97},
+		    {id: "PANTONE 4076 C", L: 37.43, a: 31.11, b: -2.08},
+		    {id: "PANTONE 4077 C", L: 38.09, a: 30.02, b: 2.25},
+		    {id: "PANTONE 7632 C", L: 82.27, a: 6.37, b: -3.29},
+		    {id: "PANTONE 7633 C", L: 70.24, a: 14.64, b: -0.71},
+		    {id: "PANTONE 7634 C", L: 55.6, a: 41.54, b: -1.1},
+		    {id: "PANTONE 7635 C", L: 47.98, a: 61.64, b: 8.2},
+		    {id: "PANTONE 7636 C", L: 43.42, a: 63.43, b: 17.17},
+		    {id: "PANTONE 7637 C", L: 36.05, a: 45.23, b: 9.14},
+		    {id: "PANTONE 7638 C", L: 32.06, a: 38.74, b: 6.86},
+		    {id: "PANTONE 217 C", L: 82.08, a: 22.44, b: -12.79},
+		    {id: "PANTONE 218 C", L: 63.38, a: 56.13, b: -16.23},
+		    {id: "PANTONE 219 C", L: 50.37, a: 75.78, b: -7.65},
+		    {id: "PANTONE Rubine Red C", L: 43.92, a: 79.55, b: 10.21},
+		    {id: "PANTONE 220 C", L: 35.88, a: 65.77, b: 3.23},
+		    {id: "PANTONE 221 C", L: 32.19, a: 57.07, b: 2.61},
+		    {id: "PANTONE 222 C", L: 26.22, a: 39.42, b: -5.34},
+		    {id: "PANTONE 7639 C", L: 50.13, a: 17.99, b: 0.6},
+		    {id: "PANTONE 7640 C", L: 39.57, a: 39.6, b: 4.53},
+		    {id: "PANTONE 7641 C", L: 35.25, a: 45.04, b: 6.02},
+		    {id: "PANTONE 7642 C", L: 30.4, a: 34.49, b: -2.15},
+		    {id: "PANTONE 7643 C", L: 27.93, a: 29.53, b: -2.3},
+		    {id: "PANTONE 7644 C", L: 24.93, a: 23.36, b: -3.52},
+		    {id: "PANTONE 7645 C", L: 23.33, a: 20.25, b: -2.67},
+		    {id: "PANTONE 3568 C", L: 84.72, a: 17.26, b: -2.64},
+		    {id: "PANTONE 3595 C", L: 81.78, a: 22.51, b: -4.12},
+		    {id: "PANTONE 2450 C", L: 53.68, a: 63.38, b: -5.35},
+		    {id: "PANTONE 3527 C", L: 53.52, a: 65.12, b: -15.41},
+		    {id: "PANTONE 3582 C", L: 61.16, a: 43.12, b: -9.2},
+		    {id: "PANTONE 2451 C", L: 47.26, a: 52.27, b: -1.4},
+		    {id: "PANTONE 2452 C", L: 47.73, a: 60.45, b: 1.05},
+		    {id: "PANTONE 223 C", L: 73.13, a: 42.92, b: -18.62},
+		    {id: "PANTONE 224 C", L: 64.82, a: 57.82, b: -20.37},
+		    {id: "PANTONE 225 C", L: 52.15, a: 76.98, b: -15.63},
+		    {id: "PANTONE 226 C", L: 45.02, a: 80.54, b: -2.87},
+		    {id: "PANTONE 227 C", L: 37.35, a: 67.23, b: -6.27},
+		    {id: "PANTONE 228 C", L: 31.48, a: 53.26, b: -9.23},
+		    {id: "PANTONE 229 C", L: 25.67, a: 35.36, b: -6.35},
+		    {id: "PANTONE 230 C", L: 78.0, a: 36.02, b: -16.55},
+		    {id: "PANTONE 231 C", L: 67.7, a: 56.7, b: -21.6},
+		    {id: "PANTONE 232 C", L: 57.4, a: 73.24, b: -21.64},
+		    {id: "PANTONE Rhodamine Red C", L: 51.64, a: 79.56, b: -17.6},
+		    {id: "PANTONE 233 C", L: 44.24, a: 75.5, b: -13.24},
+		    {id: "PANTONE 234 C", L: 36.21, a: 63.59, b: -11.0},
+		    {id: "PANTONE 235 C", L: 30.12, a: 51.37, b: -9.24},
+		    {id: "PANTONE 670 C", L: 87.01, a: 12.06, b: -8.24},
+		    {id: "PANTONE 671 C", L: 80.82, a: 21.08, b: -11.37},
+		    {id: "PANTONE 672 C", L: 73.39, a: 31.19, b: -13.89},
+		    {id: "PANTONE 673 C", L: 66.66, a: 40.44, b: -15.79},
+		    {id: "PANTONE 674 C", L: 54.38, a: 53.01, b: -15.77},
+		    {id: "PANTONE 675 C", L: 41.9, a: 60.71, b: -10.3},
+		    {id: "PANTONE 676 C", L: 33.58, a: 58.2, b: -0.8},
+		    {id: "PANTONE 2043 C", L: 83.17, a: 16.71, b: -5.54},
+		    {id: "PANTONE 2044 C", L: 71.1, a: 37.66, b: -7.29},
+		    {id: "PANTONE 2045 C", L: 63.12, a: 46.66, b: -6.37},
+		    {id: "PANTONE 2046 C", L: 55.28, a: 52.86, b: -4.54},
+		    {id: "PANTONE 2047 C", L: 44.3, a: 43.97, b: -4.82},
+		    {id: "PANTONE 2048 C", L: 39.4, a: 43.07, b: -2.84},
+		    {id: "PANTONE 2049 C", L: 33.3, a: 40.21, b: 1.17},
+		    {id: "PANTONE 677 C", L: 85.1, a: 12.05, b: -7.43},
+		    {id: "PANTONE 678 C", L: 83.43, a: 13.69, b: -8.47},
+		    {id: "PANTONE 679 C", L: 80.47, a: 16.5, b: -9.94},
+		    {id: "PANTONE 680 C", L: 67.95, a: 25.92, b: -11.81},
+		    {id: "PANTONE 681 C", L: 54.51, a: 34.61, b: -12.97},
+		    {id: "PANTONE 682 C", L: 43.28, a: 40.85, b: -12.35},
+		    {id: "PANTONE 683 C", L: 31.58, a: 41.49, b: -7.74},
+		    {id: "PANTONE 2050 C", L: 88.41, a: 11.88, b: -8.2},
+		    {id: "PANTONE 2051 C", L: 81.07, a: 13.44, b: -7.15},
+		    {id: "PANTONE 2052 C", L: 70.07, a: 20.3, b: -8.92},
+		    {id: "PANTONE 2053 C", L: 59.5, a: 25.68, b: -9.94},
+		    {id: "PANTONE 2054 C", L: 52.73, a: 24.39, b: -9.63},
+		    {id: "PANTONE 2055 C", L: 46.16, a: 26.52, b: -9.28},
+		    {id: "PANTONE 2056 C", L: 38.52, a: 28.75, b: -8.62},
+		    {id: "PANTONE 4078 C", L: 82.23, a: 18.45, b: -9.8},
+		    {id: "PANTONE 4079 C", L: 72.85, a: 20.05, b: -12.33},
+		    {id: "PANTONE 4080 C", L: 75.71, a: 17.42, b: -13.38},
+		    {id: "PANTONE 4081 C", L: 63.68, a: 16.83, b: -11.13},
+		    {id: "PANTONE 4082 C", L: 52.05, a: 33.68, b: -14.56},
+		    {id: "PANTONE 4083 C", L: 45.12, a: 27.83, b: -25.94},
+		    {id: "PANTONE 4084 C", L: 33.82, a: 29.44, b: -13.58},
+		    {id: "PANTONE 684 C", L: 83.16, a: 13.92, b: -7.2},
+		    {id: "PANTONE 685 C", L: 78.17, a: 18.02, b: -8.26},
+		    {id: "PANTONE 686 C", L: 71.65, a: 22.55, b: -9.27},
+		    {id: "PANTONE 687 C", L: 62.42, a: 27.88, b: -10.17},
+		    {id: "PANTONE 688 C", L: 51.66, a: 33.22, b: -10.82},
+		    {id: "PANTONE 689 C", L: 37.42, a: 38.35, b: -10.15},
+		    {id: "PANTONE 690 C", L: 24.74, a: 32.27, b: -4.4},
+		    {id: "PANTONE 510 C", L: 81.82, a: 19.12, b: -3.16},
+		    {id: "PANTONE 509 C", L: 78.75, a: 22.63, b: -3.79},
+		    {id: "PANTONE 508 C", L: 75.79, a: 25.4, b: -3.47},
+		    {id: "PANTONE 507 C", L: 68.29, a: 29.42, b: -4.67},
+		    {id: "PANTONE 506 C", L: 34.75, a: 37.09, b: 1.55},
+		    {id: "PANTONE 505 C", L: 29.18, a: 31.57, b: 2.95},
+		    {id: "PANTONE 504 C", L: 23.64, a: 22.57, b: 3.73},
+		    {id: "PANTONE 7429 C", L: 79.93, a: 18.62, b: -6.64},
+		    {id: "PANTONE 7430 C", L: 74.94, a: 23.9, b: -7.33},
+		    {id: "PANTONE 7431 C", L: 62.77, a: 34.86, b: -6.23},
+		    {id: "PANTONE 7432 C", L: 51.69, a: 42.55, b: -4.95},
+		    {id: "PANTONE 7433 C", L: 42.49, a: 50.53, b: -0.36},
+		    {id: "PANTONE 7434 C", L: 38.99, a: 48.32, b: 0.83},
+		    {id: "PANTONE 7435 C", L: 33.1, a: 45.66, b: -2.26},
+		    {id: "PANTONE 691 C", L: 85.26, a: 11.69, b: -0.82},
+		    {id: "PANTONE 692 C", L: 80.61, a: 15.53, b: 0.16},
+		    {id: "PANTONE 693 C", L: 72.39, a: 22.11, b: 1.37},
+		    {id: "PANTONE 694 C", L: 62.43, a: 27.67, b: 2.46},
+		    {id: "PANTONE 695 C", L: 54.21, a: 32.43, b: 3.44},
+		    {id: "PANTONE 696 C", L: 41.99, a: 35.94, b: 7.52},
+		    {id: "PANTONE 697 C", L: 37.15, a: 34.73, b: 10.05},
+		    {id: "PANTONE 496 C", L: 84.54, a: 18.34, b: -2.58},
+		    {id: "PANTONE 495 C", L: 81.92, a: 21.75, b: -2.14},
+		    {id: "PANTONE 494 C", L: 74.58, a: 29.48, b: -0.08},
+		    {id: "PANTONE 493 C", L: 66.41, a: 35.77, b: 2.39},
+		    {id: "PANTONE 492 C", L: 36.11, a: 40.71, b: 18.46},
+		    {id: "PANTONE 491 C", L: 32.43, a: 35.32, b: 15.17},
+		    {id: "PANTONE 490 C", L: 24.58, a: 24.16, b: 9.82},
+		    {id: "PANTONE 503 C", L: 82.87, a: 14.34, b: 0.43},
+		    {id: "PANTONE 502 C", L: 79.99, a: 17.4, b: -0.98},
+		    {id: "PANTONE 501 C", L: 73.38, a: 21.68, b: 0.64},
+		    {id: "PANTONE 500 C", L: 62.97, a: 26.68, b: 3.33},
+		    {id: "PANTONE 499 C", L: 34.55, a: 25.63, b: 14.29},
+		    {id: "PANTONE 498 C", L: 30.25, a: 22.08, b: 11.55},
+		    {id: "PANTONE 497 C", L: 23.97, a: 15.46, b: 7.48},
+		    {id: "PANTONE 4085 C", L: 75.94, a: 7.28, b: 3.35},
+		    {id: "PANTONE 4086 C", L: 70.15, a: 10.56, b: -0.23},
+		    {id: "PANTONE 4087 C", L: 67.82, a: 10.24, b: 3.9},
+		    {id: "PANTONE 4088 C", L: 60.52, a: 11.14, b: 6.9},
+		    {id: "PANTONE 4089 C", L: 60.54, a: 10.12, b: 2.54},
+		    {id: "PANTONE 4090 C", L: 51.37, a: 10.56, b: 8.24},
+		    {id: "PANTONE 4091 C", L: 43.63, a: 12.59, b: 3.91},
+		    {id: "PANTONE 4092 C", L: 72.35, a: 16.7, b: -6.18},
+		    {id: "PANTONE 4093 C", L: 62.81, a: 13.82, b: -0.19},
+		    {id: "PANTONE 4094 C", L: 49.31, a: 19.55, b: -3.07},
+		    {id: "PANTONE 4095 C", L: 44.6, a: 24.11, b: -3.36},
+		    {id: "PANTONE 4096 C", L: 37.2, a: 21.68, b: 5.47},
+		    {id: "PANTONE 4097 C", L: 37.49, a: 19.95, b: 2.41},
+		    {id: "PANTONE 4098 C", L: 32.88, a: 14.87, b: 8.9},
+		    {id: "PANTONE 5035 C", L: 80.96, a: 12.19, b: 0.13},
+		    {id: "PANTONE 5025 C", L: 78.1, a: 14.67, b: -0.84},
+		    {id: "PANTONE 5015 C", L: 70.54, a: 17.49, b: 1.23},
+		    {id: "PANTONE 5005 C", L: 57.72, a: 22.06, b: 2.96},
+		    {id: "PANTONE 4995 C", L: 48.45, a: 26.0, b: 4.16},
+		    {id: "PANTONE 4985 C", L: 40.07, a: 27.08, b: 6.21},
+		    {id: "PANTONE 4975 C", L: 17.28, a: 15.61, b: 6.47},
+		    {id: "PANTONE 4099 C", L: 59.76, a: 16.6, b: 3.76},
+		    {id: "PANTONE 4100 C", L: 39.15, a: 22.21, b: 7.55},
+		    {id: "PANTONE 4101 C", L: 24.1, a: 31.35, b: 11.42},
+		    {id: "PANTONE 4102 C", L: 20.42, a: 29.01, b: 8.29},
+		    {id: "PANTONE 4103 C", L: 21.68, a: 22.47, b: 2.36},
+		    {id: "PANTONE 4104 C", L: 27.69, a: 12.88, b: 3.37},
+		    {id: "PANTONE 4105 C", L: 31.54, a: 16.81, b: 13.43},
+		    {id: "PANTONE 236 C", L: 77.84, a: 35.43, b: -19.59},
+		    {id: "PANTONE 237 C", L: 70.11, a: 49.06, b: -24.23},
+		    {id: "PANTONE 238 C", L: 61.24, a: 63.11, b: -27.45},
+		    {id: "PANTONE 239 C", L: 55.28, a: 70.21, b: -28.09},
+		    {id: "PANTONE 240 C", L: 48.26, a: 68.14, b: -25.45},
+		    {id: "PANTONE 241 C", L: 41.82, a: 64.66, b: -22.28},
+		    {id: "PANTONE 242 C", L: 31.82, a: 45.39, b: -13.76},
+		    {id: "PANTONE 2057 C", L: 68.13, a: 29.97, b: -12.71},
+		    {id: "PANTONE 2058 C", L: 62.39, a: 26.3, b: -14.34},
+		    {id: "PANTONE 2059 C", L: 59.74, a: 30.12, b: -12.35},
+		    {id: "PANTONE 2060 C", L: 58.36, a: 45.06, b: -18.07},
+		    {id: "PANTONE 2061 C", L: 48.46, a: 44.92, b: -13.85},
+		    {id: "PANTONE 2062 C", L: 47.79, a: 52.71, b: -17.97},
+		    {id: "PANTONE 2063 C", L: 41.69, a: 54.38, b: -16.7},
+		    {id: "PANTONE 2365 C", L: 81.7, a: 26.19, b: -16.14},
+		    {id: "PANTONE 2375 C", L: 65.77, a: 52.94, b: -28.97},
+		    {id: "PANTONE 2385 C", L: 53.72, a: 70.49, b: -32.85},
+		    {id: "PANTONE 2395 C", L: 46.52, a: 77.42, b: -31.89},
+		    {id: "PANTONE 2405 C", L: 40.58, a: 71.09, b: -29.53},
+		    {id: "PANTONE 2415 C", L: 36.07, a: 64.9, b: -26.13},
+		    {id: "PANTONE 2425 C", L: 29.96, a: 55.39, b: -20.16},
+		    {id: "PANTONE 243 C", L: 80.74, a: 26.43, b: -19.25},
+		    {id: "PANTONE 244 C", L: 73.76, a: 37.87, b: -25.19},
+		    {id: "PANTONE 245 C", L: 66.78, a: 48.57, b: -30.83},
+		    {id: "PANTONE 246 C", L: 49.39, a: 72.29, b: -37.22},
+		    {id: "PANTONE 247 C", L: 45.53, a: 70.65, b: -35.2},
+		    {id: "PANTONE 248 C", L: 40.11, a: 63.41, b: -31.16},
+		    {id: "PANTONE 249 C", L: 32.73, a: 45.39, b: -20.53},
+		    {id: "PANTONE 7646 C", L: 53.5, a: 27.83, b: -7.02},
+		    {id: "PANTONE 7647 C", L: 43.39, a: 50.92, b: -8.29},
+		    {id: "PANTONE 7648 C", L: 36.43, a: 55.55, b: -10.81},
+		    {id: "PANTONE 7649 C", L: 32.9, a: 51.54, b: -13.27},
+		    {id: "PANTONE 7650 C", L: 28.42, a: 40.91, b: -13.5},
+		    {id: "PANTONE 7651 C", L: 28.67, a: 34.95, b: -16.38},
+		    {id: "PANTONE 7652 C", L: 25.45, a: 31.22, b: -14.51},
+		    {id: "PANTONE 250 C", L: 80.88, a: 24.45, b: -19.55},
+		    {id: "PANTONE 251 C", L: 72.98, a: 35.9, b: -28.51},
+		    {id: "PANTONE 252 C", L: 58.74, a: 55.31, b: -40.77},
+		    {id: "PANTONE Purple C", L: 47.81, a: 70.3, b: -46.18},
+		    {id: "PANTONE 253 C", L: 43.19, a: 68.46, b: -44.13},
+		    {id: "PANTONE 254 C", L: 38.51, a: 60.79, b: -39.04},
+		    {id: "PANTONE 255 C", L: 29.96, a: 43.18, b: -25.53},
+		    {id: "PANTONE 2064 C", L: 73.99, a: 31.92, b: -19.76},
+		    {id: "PANTONE 2065 C", L: 75.41, a: 28.83, b: -22.61},
+		    {id: "PANTONE 2066 C", L: 67.9, a: 37.29, b: -28.38},
+		    {id: "PANTONE 2067 C", L: 57.91, a: 46.75, b: -34.3},
+		    {id: "PANTONE 2068 C", L: 50.2, a: 52.78, b: -38.08},
+		    {id: "PANTONE 2069 C", L: 44.16, a: 56.28, b: -39.78},
+		    {id: "PANTONE 2070 C", L: 36.24, a: 57.56, b: -40.36},
+		    {id: "PANTONE 517 C", L: 84.18, a: 17.82, b: -11.13},
+		    {id: "PANTONE 516 C", L: 81.67, a: 19.8, b: -13.6},
+		    {id: "PANTONE 515 C", L: 77.03, a: 26.57, b: -17.24},
+		    {id: "PANTONE 514 C", L: 67.54, a: 36.11, b: -22.54},
+		    {id: "PANTONE 513 C", L: 39.35, a: 48.71, b: -31.01},
+		    {id: "PANTONE 512 C", L: 35.42, a: 42.28, b: -22.98},
+		    {id: "PANTONE 511 C", L: 27.2, a: 28.29, b: -11.27},
+		    {id: "PANTONE 2351 C", L: 60.35, a: 35.25, b: -21.25},
+		    {id: "PANTONE 2352 C", L: 54.55, a: 41.63, b: -23.03},
+		    {id: "PANTONE 2353 C", L: 51.98, a: 56.42, b: -26.33},
+		    {id: "PANTONE 2354 C", L: 43.95, a: 36.87, b: -23.22},
+		    {id: "PANTONE 2355 C", L: 32.26, a: 57.55, b: -30.98},
+		    {id: "PANTONE 2356 C", L: 25.46, a: 53.13, b: -25.21},
+		    {id: "PANTONE 2357 C", L: 22.69, a: 39.75, b: -9.55},
+		    {id: "PANTONE 7653 C", L: 58.18, a: 8.5, b: -8.08},
+		    {id: "PANTONE 7654 C", L: 55.91, a: 23.56, b: -15.45},
+		    {id: "PANTONE 7655 C", L: 48.86, a: 38.05, b: -21.71},
+		    {id: "PANTONE 7656 C", L: 39.09, a: 44.39, b: -23.6},
+		    {id: "PANTONE 7657 C", L: 29.79, a: 36.71, b: -19.38},
+		    {id: "PANTONE 7658 C", L: 30.57, a: 30.56, b: -16.23},
+		    {id: "PANTONE 7659 C", L: 28.55, a: 22.41, b: -11.36},
+		    {id: "PANTONE 5175 C", L: 82.11, a: 8.75, b: -5.85},
+		    {id: "PANTONE 5165 C", L: 79.84, a: 10.11, b: -7.38},
+		    {id: "PANTONE 5155 C", L: 70.66, a: 14.16, b: -9.44},
+		    {id: "PANTONE 5145 C", L: 54.39, a: 19.93, b: -11.61},
+		    {id: "PANTONE 5135 C", L: 41.68, a: 23.81, b: -12.81},
+		    {id: "PANTONE 5125 C", L: 32.27, a: 25.97, b: -12.62},
+		    {id: "PANTONE 5115 C", L: 23.46, a: 22.5, b: -8.6},
+		    {id: "PANTONE 4106 C", L: 72.31, a: 12.31, b: -4.22},
+		    {id: "PANTONE 4107 C", L: 63.7, a: 13.92, b: -8.76},
+		    {id: "PANTONE 4108 C", L: 58.98, a: 17.24, b: -8.1},
+		    {id: "PANTONE 4109 C", L: 55.05, a: 19.11, b: -6.15},
+		    {id: "PANTONE 4110 C", L: 49.58, a: 15.39, b: -7.96},
+		    {id: "PANTONE 4111 C", L: 41.7, a: 18.86, b: -6.34},
+		    {id: "PANTONE 4112 C", L: 49.43, a: 14.64, b: -0.77},
+		    {id: "PANTONE 5245 C", L: 84.15, a: 7.24, b: -5.96},
+		    {id: "PANTONE 5235 C", L: 78.84, a: 9.32, b: -6.6},
+		    {id: "PANTONE 5225 C", L: 74.37, a: 10.78, b: -7.22},
+		    {id: "PANTONE 5215 C", L: 64.69, a: 13.49, b: -8.21},
+		    {id: "PANTONE 5205 C", L: 46.86, a: 17.66, b: -9.21},
+		    {id: "PANTONE 5195 C", L: 33.46, a: 18.9, b: -8.62},
+		    {id: "PANTONE 5185 C", L: 23.86, a: 15.09, b: -6.83},
+		    {id: "PANTONE 4113 C", L: 60.95, a: 10.48, b: -2.39},
+		    {id: "PANTONE 4114 C", L: 59.99, a: 8.96, b: -4.73},
+		    {id: "PANTONE 4115 C", L: 55.86, a: 10.48, b: -1.28},
+		    {id: "PANTONE 4116 C", L: 56.95, a: 9.39, b: 0.35},
+		    {id: "PANTONE 4117 C", L: 44.5, a: 9.49, b: -10.72},
+		    {id: "PANTONE 4118 C", L: 26.07, a: 10.8, b: -12.49},
+		    {id: "PANTONE 4119 C", L: 24.77, a: 6.6, b: -7.84},
+		    {id: "PANTONE 524 C", L: 80.68, a: 11.52, b: -11.98},
+		    {id: "PANTONE 523 C", L: 75.16, a: 15.18, b: -16.06},
+		    {id: "PANTONE 522 C", L: 68.14, a: 19.28, b: -20.24},
+		    {id: "PANTONE 521 C", L: 58.53, a: 24.25, b: -24.5},
+		    {id: "PANTONE 520 C", L: 29.2, a: 32.78, b: -26.41},
+		    {id: "PANTONE 519 C", L: 27.46, a: 25.9, b: -20.7},
+		    {id: "PANTONE 518 C", L: 23.8, a: 17.25, b: -11.06},
+		    {id: "PANTONE 7436 C", L: 89.33, a: 10.91, b: -10.51},
+		    {id: "PANTONE 7437 C", L: 74.71, a: 17.76, b: -16.52},
+		    {id: "PANTONE 7438 C", L: 72.26, a: 30.85, b: -25.21},
+		    {id: "PANTONE 7439 C", L: 62.48, a: 25.2, b: -22.84},
+		    {id: "PANTONE 7440 C", L: 56.07, a: 25.7, b: -21.27},
+		    {id: "PANTONE 7441 C", L: 50.85, a: 42.87, b: -44.48},
+		    {id: "PANTONE 7442 C", L: 43.78, a: 54.79, b: -54.02},
+		    {id: "PANTONE 2562 C", L: 75.42, a: 27.29, b: -27.28},
+		    {id: "PANTONE 2572 C", L: 66.75, a: 37.24, b: -35.79},
+		    {id: "PANTONE 2582 C", L: 50.68, a: 54.15, b: -48.16},
+		    {id: "PANTONE 2592 C", L: 41.7, a: 62.22, b: -53.08},
+		    {id: "PANTONE 2602 C", L: 35.27, a: 58.22, b: -47.62},
+		    {id: "PANTONE 2612 C", L: 32.26, a: 46.79, b: -36.43},
+		    {id: "PANTONE 2622 C", L: 29.66, a: 31.24, b: -21.6},
+		    {id: "PANTONE 531 C", L: 83.62, a: 14.72, b: -17.0},
+		    {id: "PANTONE 530 C", L: 79.1, a: 19.32, b: -21.78},
+		    {id: "PANTONE 529 C", L: 72.15, a: 25.81, b: -28.75},
+		    {id: "PANTONE 528 C", L: 62.03, a: 34.13, b: -37.08},
+		    {id: "PANTONE 527 C", L: 37.59, a: 49.58, b: -50.49},
+		    {id: "PANTONE 526 C", L: 33.07, a: 41.75, b: -39.83},
+		    {id: "PANTONE 525 C", L: 26.0, a: 27.79, b: -22.84},
+		    {id: "PANTONE 256 C", L: 80.28, a: 14.86, b: -16.54},
+		    {id: "PANTONE 257 C", L: 71.11, a: 22.53, b: -22.07},
+		    {id: "PANTONE 258 C", L: 42.37, a: 40.99, b: -34.23},
+		    {id: "PANTONE 259 C", L: 28.82, a: 43.75, b: -33.74},
+		    {id: "PANTONE 260 C", L: 27.51, a: 36.59, b: -26.16},
+		    {id: "PANTONE 261 C", L: 25.91, a: 32.07, b: -22.77},
+		    {id: "PANTONE 262 C", L: 23.41, a: 25.26, b: -16.0},
+		    {id: "PANTONE 2563 C", L: 72.48, a: 24.44, b: -25.72},
+		    {id: "PANTONE 2573 C", L: 62.96, a: 32.26, b: -32.68},
+		    {id: "PANTONE 2583 C", L: 50.88, a: 40.78, b: -38.54},
+		    {id: "PANTONE 2593 C", L: 37.48, a: 48.76, b: -43.56},
+		    {id: "PANTONE 2603 C", L: 30.07, a: 46.56, b: -39.62},
+		    {id: "PANTONE 2613 C", L: 27.75, a: 42.98, b: -35.53},
+		    {id: "PANTONE 2623 C", L: 25.75, a: 37.48, b: -29.48},
+		    {id: "PANTONE 2078 C", L: 67.77, a: 14.7, b: -15.58},
+		    {id: "PANTONE 2079 C", L: 56.42, a: 18.31, b: -18.74},
+		    {id: "PANTONE 2080 C", L: 54.1, a: 24.41, b: -27.21},
+		    {id: "PANTONE 2081 C", L: 46.42, a: 27.33, b: -29.96},
+		    {id: "PANTONE 2082 C", L: 40.43, a: 29.2, b: -31.68},
+		    {id: "PANTONE 2083 C", L: 50.24, a: 40.02, b: -49.68},
+		    {id: "PANTONE 2084 C", L: 38.6, a: 49.26, b: -55.54},
+		    {id: "PANTONE 2453 C", L: 66.84, a: 20.7, b: -20.93},
+		    {id: "PANTONE 3520 C", L: 59.81, a: 32.21, b: -28.88},
+		    {id: "PANTONE 3559 C", L: 45.07, a: 37.73, b: -35.59},
+		    {id: "PANTONE 3593 C", L: 53.64, a: 28.86, b: -30.91},
+		    {id: "PANTONE 3575 C", L: 54.53, a: 27.18, b: -37.06},
+		    {id: "PANTONE 3543 C", L: 62.97, a: 19.35, b: -31.47},
+		    {id: "PANTONE 3515 C", L: 23.5, a: 50.5, b: -44.04},
+		    {id: "PANTONE 2071 C", L: 75.47, a: 15.98, b: -23.86},
+		    {id: "PANTONE 2072 C", L: 67.15, a: 23.19, b: -30.35},
+		    {id: "PANTONE 2073 C", L: 66.08, a: 20.76, b: -31.82},
+		    {id: "PANTONE 2074 C", L: 51.97, a: 31.7, b: -40.83},
+		    {id: "PANTONE 2075 C", L: 49.62, a: 28.81, b: -43.47},
+		    {id: "PANTONE 2076 C", L: 46.22, a: 34.03, b: -44.29},
+		    {id: "PANTONE 2077 C", L: 36.89, a: 36.65, b: -48.22},
+		    {id: "PANTONE 7660 C", L: 61.61, a: 7.51, b: -12.26},
+		    {id: "PANTONE 7661 C", L: 50.84, a: 20.51, b: -20.2},
+		    {id: "PANTONE 7662 C", L: 37.55, a: 34.46, b: -27.95},
+		    {id: "PANTONE 7663 C", L: 31.0, a: 36.35, b: -30.54},
+		    {id: "PANTONE 7664 C", L: 30.44, a: 33.69, b: -32.62},
+		    {id: "PANTONE 7665 C", L: 30.2, a: 27.49, b: -26.8},
+		    {id: "PANTONE 7666 C", L: 35.0, a: 10.67, b: -11.99},
+		    {id: "PANTONE 2567 C", L: 70.74, a: 22.39, b: -28.97},
+		    {id: "PANTONE 2577 C", L: 58.75, a: 30.85, b: -38.3},
+		    {id: "PANTONE 2587 C", L: 41.97, a: 42.1, b: -48.88},
+		    {id: "PANTONE 2597 C", L: 24.95, a: 49.81, b: -54.57},
+		    {id: "PANTONE 2607 C", L: 20.96, a: 44.12, b: -47.61},
+		    {id: "PANTONE 2617 C", L: 18.58, a: 39.04, b: -41.5},
+		    {id: "PANTONE 2627 C", L: 15.42, a: 30.85, b: -31.87},
+		    {id: "PANTONE 263 C", L: 82.28, a: 12.83, b: -18.07},
+		    {id: "PANTONE 264 C", L: 72.58, a: 20.72, b: -30.74},
+		    {id: "PANTONE 265 C", L: 50.97, a: 37.36, b: -52.14},
+		    {id: "PANTONE 266 C", L: 39.06, a: 46.48, b: -61.64},
+		    {id: "PANTONE 267 C", L: 29.66, a: 45.48, b: -57.83},
+		    {id: "PANTONE 268 C", L: 28.17, a: 35.16, b: -43.15},
+		    {id: "PANTONE 269 C", L: 26.14, a: 27.79, b: -32.08},
+		    {id: "PANTONE 2085 C", L: 84.53, a: 11.91, b: -15.26},
+		    {id: "PANTONE 2086 C", L: 62.11, a: 19.97, b: -33.97},
+		    {id: "PANTONE 2087 C", L: 58.22, a: 27.49, b: -44.39},
+		    {id: "PANTONE 2088 C", L: 47.49, a: 34.67, b: -53.54},
+		    {id: "PANTONE 2089 C", L: 40.91, a: 38.78, b: -58.47},
+		    {id: "PANTONE 2090 C", L: 35.85, a: 41.91, b: -61.77},
+		    {id: "PANTONE 2091 C", L: 25.34, a: 47.43, b: -66.69},
+		    {id: "PANTONE 2635 C", L: 76.31, a: 14.43, b: -25.46},
+		    {id: "PANTONE 2645 C", L: 66.26, a: 21.25, b: -36.51},
+		    {id: "PANTONE 2655 C", L: 56.81, a: 28.06, b: -46.4},
+		    {id: "PANTONE 2665 C", L: 45.67, a: 36.69, b: -56.9},
+		    {id: "PANTONE Violet C", L: 18.83, a: 57.58, b: -73.09},
+		    {id: "PANTONE 2685 C", L: 14.0, a: 42.34, b: -55.34},
+		    {id: "PANTONE 2695 C", L: 14.28, a: 18.13, b: -25.18},
+		    {id: "PANTONE 2092 C", L: 72.8, a: 12.41, b: -23.81},
+		    {id: "PANTONE 2093 C", L: 65.21, a: 12.7, b: -22.75},
+		    {id: "PANTONE 2094 C", L: 56.18, a: 14.76, b: -25.72},
+		    {id: "PANTONE 2095 C", L: 47.19, a: 23.12, b: -41.29},
+		    {id: "PANTONE 2096 C", L: 39.55, a: 26.06, b: -44.93},
+		    {id: "PANTONE 2097 C", L: 38.44, a: 36.01, b: -61.23},
+		    {id: "PANTONE 2098 C", L: 28.23, a: 42.12, b: -67.06},
+		    {id: "PANTONE 2099 C", L: 69.08, a: 13.0, b: -22.33},
+		    {id: "PANTONE 2100 C", L: 62.96, a: 16.55, b: -31.52},
+		    {id: "PANTONE 2101 C", L: 54.39, a: 25.89, b: -48.72},
+		    {id: "PANTONE 2102 C", L: 42.16, a: 24.01, b: -48.86},
+		    {id: "PANTONE 2103 C", L: 36.76, a: 26.57, b: -51.28},
+		    {id: "PANTONE 2104 C", L: 29.74, a: 29.22, b: -53.59},
+		    {id: "PANTONE 2105 C", L: 20.71, a: 30.52, b: -49.81},
+		    {id: "PANTONE 4120 C", L: 72.58, a: 11.68, b: -20.8},
+		    {id: "PANTONE 4121 C", L: 60.81, a: 13.99, b: -23.13},
+		    {id: "PANTONE 4122 C", L: 49.23, a: 18.25, b: -38.01},
+		    {id: "PANTONE 4123 C", L: 69.09, a: 4.2, b: -14.95},
+		    {id: "PANTONE 4124 C", L: 60.93, a: 6.15, b: -20.34},
+		    {id: "PANTONE 4125 C", L: 40.95, a: 5.63, b: -15.94},
+		    {id: "PANTONE 4126 C", L: 30.72, a: 13.57, b: -19.02},
+		    {id: "PANTONE 270 C", L: 74.52, a: 8.22, b: -25.66},
+		    {id: "PANTONE 271 C", L: 63.74, a: 12.31, b: -35.14},
+		    {id: "PANTONE 272 C", L: 51.57, a: 16.68, b: -44.07},
+		    {id: "PANTONE 273 C", L: 13.37, a: 26.09, b: -44.09},
+		    {id: "PANTONE 274 C", L: 12.71, a: 20.23, b: -35.78},
+		    {id: "PANTONE 275 C", L: 11.79, a: 16.37, b: -29.75},
+		    {id: "PANTONE 276 C", L: 12.18, a: 8.33, b: -15.49},
+		    {id: "PANTONE 3558 C", L: 65.09, a: 5.53, b: -30.26},
+		    {id: "PANTONE 3555 C", L: 24.43, a: 35.31, b: -40.85},
+		    {id: "PANTONE 3583 C", L: 24.49, a: 38.5, b: -47.36},
+		    {id: "PANTONE 3574 C", L: 34.01, a: 20.17, b: -29.82},
+		    {id: "PANTONE 3566 C", L: 24.48, a: 26.48, b: -37.28},
+		    {id: "PANTONE 3535 C", L: 18.91, a: 43.35, b: -57.58},
+		    {id: "PANTONE 3542 C", L: 17.72, a: 34.07, b: -53.79},
+		    {id: "PANTONE 2705 C", L: 69.45, a: 12.65, b: -34.39},
+		    {id: "PANTONE 2715 C", L: 58.62, a: 18.74, b: -45.72},
+		    {id: "PANTONE 2725 C", L: 44.57, a: 27.61, b: -58.65},
+		    {id: "PANTONE 2735 C", L: 14.67, a: 49.76, b: -69.99},
+		    {id: "PANTONE 2745 C", L: 13.11, a: 36.82, b: -55.65},
+		    {id: "PANTONE 2755 C", L: 12.97, a: 28.02, b: -45.67},
+		    {id: "PANTONE 2765 C", L: 11.42, a: 16.48, b: -29.94},
+		    {id: "PANTONE 7667 C", L: 51.99, a: 3.01, b: -24.41},
+		    {id: "PANTONE 7668 C", L: 47.38, a: 8.47, b: -30.4},
+		    {id: "PANTONE 7669 C", L: 42.31, a: 14.72, b: -35.96},
+		    {id: "PANTONE 7670 C", L: 37.93, a: 16.87, b: -38.7},
+		    {id: "PANTONE 7671 C", L: 33.33, a: 19.8, b: -38.7},
+		    {id: "PANTONE 7672 C", L: 31.29, a: 19.93, b: -38.71},
+		    {id: "PANTONE 7673 C", L: 37.55, a: 11.06, b: -30.78},
+		    {id: "PANTONE 7443 C", L: 87.85, a: 4.68, b: -11.82},
+		    {id: "PANTONE 7444 C", L: 75.7, a: 6.85, b: -22.99},
+		    {id: "PANTONE 7445 C", L: 68.03, a: 8.33, b: -20.23},
+		    {id: "PANTONE 7446 C", L: 58.52, a: 15.41, b: -39.45},
+		    {id: "PANTONE 7447 C", L: 34.3, a: 18.29, b: -25.45},
+		    {id: "PANTONE 7448 C", L: 25.92, a: 12.87, b: -10.68},
+		    {id: "PANTONE 7449 C", L: 20.27, a: 15.94, b: -7.82},
+		    {id: "PANTONE 7674 C", L: 58.76, a: 7.14, b: -25.39},
+		    {id: "PANTONE 7675 C", L: 54.29, a: 8.53, b: -27.16},
+		    {id: "PANTONE 7676 C", L: 46.36, a: 18.14, b: -32.35},
+		    {id: "PANTONE 7677 C", L: 39.64, a: 25.29, b: -33.59},
+		    {id: "PANTONE 7678 C", L: 36.71, a: 27.32, b: -36.14},
+		    {id: "PANTONE 7679 C", L: 31.14, a: 24.95, b: -37.26},
+		    {id: "PANTONE 7680 C", L: 27.52, a: 28.43, b: -37.03},
+		    {id: "PANTONE 663 C", L: 90.14, a: 3.67, b: -7.0},
+		    {id: "PANTONE 664 C", L: 88.11, a: 4.54, b: -8.11},
+		    {id: "PANTONE 665 C", L: 77.67, a: 8.07, b: -12.69},
+		    {id: "PANTONE 666 C", L: 62.66, a: 11.81, b: -17.62},
+		    {id: "PANTONE 667 C", L: 47.57, a: 15.25, b: -21.89},
+		    {id: "PANTONE 668 C", L: 35.83, a: 17.79, b: -24.44},
+		    {id: "PANTONE 669 C", L: 21.51, a: 18.08, b: -24.17},
+		    {id: "PANTONE 5315 C", L: 86.35, a: 3.17, b: -8.81},
+		    {id: "PANTONE 5305 C", L: 79.87, a: 4.21, b: -11.5},
+		    {id: "PANTONE 5295 C", L: 72.86, a: 5.14, b: -13.73},
+		    {id: "PANTONE 5285 C", L: 58.37, a: 7.01, b: -17.16},
+		    {id: "PANTONE 5275 C", L: 37.17, a: 9.45, b: -21.88},
+		    {id: "PANTONE 5265 C", L: 26.56, a: 10.64, b: -23.22},
+		    {id: "PANTONE 5255 C", L: 11.18, a: 8.23, b: -17.49},
+		    {id: "PANTONE 2358 C", L: 67.92, a: 6.24, b: -7.33},
+		    {id: "PANTONE 2359 C", L: 49.75, a: 8.28, b: -9.79},
+		    {id: "PANTONE 2360 C", L: 51.49, a: 5.56, b: -13.66},
+		    {id: "PANTONE 2361 C", L: 47.91, a: 5.7, b: -18.06},
+		    {id: "PANTONE 2362 C", L: 45.45, a: 5.94, b: -14.82},
+		    {id: "PANTONE 2363 C", L: 40.22, a: 6.58, b: -14.98},
+		    {id: "PANTONE 2364 C", L: 39.1, a: 9.92, b: -10.78},
+		    {id: "PANTONE 4127 C", L: 54.59, a: 4.64, b: -14.22},
+		    {id: "PANTONE 4128 C", L: 47.86, a: 4.39, b: -14.87},
+		    {id: "PANTONE 4129 C", L: 46.68, a: 1.46, b: -12.91},
+		    {id: "PANTONE 4130 C", L: 38.08, a: 0.92, b: -14.2},
+		    {id: "PANTONE 4131 C", L: 32.1, a: 2.81, b: -13.1},
+		    {id: "PANTONE 4132 C", L: 25.09, a: 3.94, b: -10.68},
+		    {id: "PANTONE 4133 C", L: 25.14, a: 3.19, b: -8.32},
+		    {id: "PANTONE 2106 C", L: 73.95, a: 3.64, b: -17.26},
+		    {id: "PANTONE 2107 C", L: 63.06, a: 3.85, b: -21.9},
+		    {id: "PANTONE 2108 C", L: 53.68, a: 5.73, b: -25.59},
+		    {id: "PANTONE 2109 C", L: 46.29, a: 7.87, b: -27.88},
+		    {id: "PANTONE 2110 C", L: 41.9, a: 8.08, b: -28.68},
+		    {id: "PANTONE 2111 C", L: 33.84, a: 8.16, b: -30.31},
+		    {id: "PANTONE 2112 C", L: 18.62, a: 22.82, b: -37.94},
+		    {id: "PANTONE 2113 C", L: 72.26, a: 6.65, b: -32.29},
+		    {id: "PANTONE 2114 C", L: 59.78, a: 9.01, b: -35.88},
+		    {id: "PANTONE 2115 C", L: 51.99, a: 11.43, b: -40.74},
+		    {id: "PANTONE 2116 C", L: 45.42, a: 14.06, b: -44.23},
+		    {id: "PANTONE 2117 C", L: 34.41, a: 18.3, b: -48.74},
+		    {id: "PANTONE 2118 C", L: 25.2, a: 16.4, b: -41.08},
+		    {id: "PANTONE 2119 C", L: 21.07, a: 13.43, b: -34.84},
+		    {id: "PANTONE 2366 C", L: 49.48, a: 19.94, b: -53.95},
+		    {id: "PANTONE 2367 C", L: 37.48, a: 24.86, b: -56.47},
+		    {id: "PANTONE 2368 C", L: 36.82, a: 29.5, b: -64.63},
+		    {id: "PANTONE 2369 C", L: 33.26, a: 28.76, b: -66.35},
+		    {id: "PANTONE 2370 C", L: 24.07, a: 30.21, b: -60.65},
+		    {id: "PANTONE 2371 C", L: 18.53, a: 43.04, b: -64.91},
+		    {id: "PANTONE 2372 C", L: 17.72, a: 27.31, b: -51.56},
+		    {id: "PANTONE 538 C", L: 82.89, a: -0.68, b: -10.58},
+		    {id: "PANTONE 537 C", L: 79.96, a: -0.39, b: -13.73},
+		    {id: "PANTONE 536 C", L: 72.04, a: -0.69, b: -17.44},
+		    {id: "PANTONE 535 C", L: 65.03, a: 0.47, b: -20.76},
+		    {id: "PANTONE 534 C", L: 22.16, a: 1.84, b: -28.39},
+		    {id: "PANTONE 533 C", L: 17.36, a: 2.74, b: -18.91},
+		    {id: "PANTONE 532 C", L: 12.4, a: 1.34, b: -8.08},
+		    {id: "PANTONE 7541 C", L: 88.93, a: -0.87, b: -6.74},
+		    {id: "PANTONE 7542 C", L: 74.51, a: -5.41, b: -10.98},
+		    {id: "PANTONE 7543 C", L: 66.74, a: -1.8, b: -10.42},
+		    {id: "PANTONE 7544 C", L: 54.92, a: -2.57, b: -11.92},
+		    {id: "PANTONE 7545 C", L: 34.48, a: -3.43, b: -13.52},
+		    {id: "PANTONE 7546 C", L: 22.25, a: -3.19, b: -13.28},
+		    {id: "PANTONE 7547 C", L: 10.98, a: -2.05, b: -9.41},
+		    {id: "PANTONE 2162 C", L: 67.67, a: 0.4, b: -12.28},
+		    {id: "PANTONE 2163 C", L: 62.67, a: -3.75, b: -15.77},
+		    {id: "PANTONE 2164 C", L: 59.75, a: -3.52, b: -16.44},
+		    {id: "PANTONE 2165 C", L: 52.16, a: -4.2, b: -18.1},
+		    {id: "PANTONE 2166 C", L: 46.29, a: -4.51, b: -19.27},
+		    {id: "PANTONE 2167 C", L: 43.62, a: -4.79, b: -19.74},
+		    {id: "PANTONE 2168 C", L: 29.54, a: -8.75, b: -16.69},
+		    {id: "PANTONE 4134 C", L: 66.99, a: 3.13, b: -11.37},
+		    {id: "PANTONE 4135 C", L: 55.42, a: 1.68, b: -16.51},
+		    {id: "PANTONE 4136 C", L: 45.94, a: -0.52, b: -15.56},
+		    {id: "PANTONE 4137 C", L: 38.55, a: -2.69, b: -19.29},
+		    {id: "PANTONE 4138 C", L: 39.14, a: -1.49, b: -16.23},
+		    {id: "PANTONE 4139 C", L: 37.65, a: 0.03, b: -13.81},
+		    {id: "PANTONE 4140 C", L: 25.81, a: 0.83, b: -8.41},
+		    {id: "PANTONE 2373 C", L: 54.01, a: 0.25, b: -20.43},
+		    {id: "PANTONE 2374 C", L: 39.67, a: 0.71, b: -23.27},
+		    {id: "PANTONE 2376 C", L: 38.22, a: 0.49, b: -17.7},
+		    {id: "PANTONE 2377 C", L: 33.89, a: -5.33, b: -22.09},
+		    {id: "PANTONE 2378 C", L: 30.43, a: 0.83, b: -21.57},
+		    {id: "PANTONE 2379 C", L: 29.03, a: 0.54, b: -14.8},
+		    {id: "PANTONE 2380 C", L: 21.2, a: 0.79, b: -17.12},
+		    {id: "PANTONE 552 C", L: 82.83, a: -5.54, b: -13.09},
+		    {id: "PANTONE 551 C", L: 77.65, a: -8.42, b: -15.24},
+		    {id: "PANTONE 550 C", L: 72.34, a: -9.96, b: -18.71},
+		    {id: "PANTONE 549 C", L: 63.8, a: -13.04, b: -21.54},
+		    {id: "PANTONE 548 C", L: 21.48, a: -19.36, b: -19.77},
+		    {id: "PANTONE 547 C", L: 16.87, a: -15.82, b: -14.86},
+		    {id: "PANTONE 546 C", L: 15.4, a: -9.73, b: -8.84},
+		    {id: "PANTONE 5455 C", L: 81.77, a: -2.43, b: -11.12},
+		    {id: "PANTONE 5445 C", L: 79.75, a: -2.77, b: -12.16},
+		    {id: "PANTONE 5435 C", L: 74.59, a: -3.73, b: -14.12},
+		    {id: "PANTONE 5425 C", L: 61.13, a: -5.77, b: -17.9},
+		    {id: "PANTONE 5415 C", L: 51.05, a: -6.9, b: -20.11},
+		    {id: "PANTONE 5405 C", L: 46.71, a: -7.53, b: -19.89},
+		    {id: "PANTONE 5395 C", L: 10.59, a: -4.64, b: -12.42},
+		    {id: "PANTONE 2155 C", L: 72.16, a: -3.39, b: -18.08},
+		    {id: "PANTONE 2156 C", L: 66.3, a: -3.78, b: -20.93},
+		    {id: "PANTONE 2157 C", L: 59.34, a: -4.21, b: -23.75},
+		    {id: "PANTONE 2158 C", L: 52.27, a: -5.42, b: -25.99},
+		    {id: "PANTONE 2159 C", L: 47.57, a: -5.46, b: -27.6},
+		    {id: "PANTONE 2160 C", L: 41.97, a: -5.25, b: -29.09},
+		    {id: "PANTONE 2161 C", L: 34.74, a: -4.66, b: -30.14},
+		    {id: "PANTONE 2134 C", L: 67.3, a: 2.09, b: -27.76},
+		    {id: "PANTONE 2135 C", L: 57.63, a: 2.99, b: -33.8},
+		    {id: "PANTONE 2136 C", L: 60.9, a: 1.42, b: -24.38},
+		    {id: "PANTONE 2137 C", L: 52.7, a: 2.47, b: -27.44},
+		    {id: "PANTONE 2138 C", L: 48.78, a: -0.89, b: -20.05},
+		    {id: "PANTONE 2139 C", L: 43.28, a: 0.03, b: -29.71},
+		    {id: "PANTONE 2140 C", L: 34.64, a: 2.32, b: -31.63},
+		    {id: "PANTONE 642 C", L: 87.45, a: -0.91, b: -11.69},
+		    {id: "PANTONE 643 C", L: 84.55, a: -1.61, b: -14.4},
+		    {id: "PANTONE 644 C", L: 73.41, a: -3.45, b: -22.11},
+		    {id: "PANTONE 645 C", L: 64.68, a: -4.37, b: -27.05},
+		    {id: "PANTONE 646 C", L: 55.76, a: -4.88, b: -31.33},
+		    {id: "PANTONE 647 C", L: 38.72, a: -4.73, b: -37.12},
+		    {id: "PANTONE 648 C", L: 17.39, a: 1.34, b: -35.96},
+		    {id: "PANTONE 649 C", L: 89.64, a: 0.35, b: -9.87},
+		    {id: "PANTONE 650 C", L: 86.32, a: -0.2, b: -12.86},
+		    {id: "PANTONE 651 C", L: 75.19, a: -1.43, b: -20.54},
+		    {id: "PANTONE 652 C", L: 62.78, a: -2.05, b: -27.28},
+		    {id: "PANTONE 653 C", L: 40.04, a: -1.98, b: -36.32},
+		    {id: "PANTONE 654 C", L: 23.72, a: 1.47, b: -39.01},
+		    {id: "PANTONE 655 C", L: 14.39, a: 4.59, b: -34.25},
+		    {id: "PANTONE 656 C", L: 90.56, a: 0.24, b: -10.43},
+		    {id: "PANTONE 657 C", L: 85.59, a: -0.71, b: -17.05},
+		    {id: "PANTONE 658 C", L: 79.96, a: -1.36, b: -23.8},
+		    {id: "PANTONE 659 C", L: 66.03, a: -1.2, b: -38.12},
+		    {id: "PANTONE 660 C", L: 51.37, a: 0.9, b: -50.17},
+		    {id: "PANTONE 661 C", L: 23.67, a: 15.29, b: -61.06},
+		    {id: "PANTONE 662 C", L: 14.28, a: 22.17, b: -53.71},
+		    {id: "PANTONE 2127 C", L: 80.14, a: -1.02, b: -19.12},
+		    {id: "PANTONE 2128 C", L: 72.95, a: -0.53, b: -31.69},
+		    {id: "PANTONE 2129 C", L: 57.86, a: 2.84, b: -48.9},
+		    {id: "PANTONE 2130 C", L: 50.41, a: 11.0, b: -55.25},
+		    {id: "PANTONE 2131 C", L: 40.21, a: 14.45, b: -59.56},
+		    {id: "PANTONE 2132 C", L: 37.94, a: 13.67, b: -66.12},
+		    {id: "PANTONE 2133 C", L: 36.53, a: 5.01, b: -50.73},
+		    {id: "PANTONE 7450 C", L: 79.46, a: 1.99, b: -16.79},
+		    {id: "PANTONE 7451 C", L: 69.02, a: 1.08, b: -37.88},
+		    {id: "PANTONE 7452 C", L: 62.01, a: 9.26, b: -45.11},
+		    {id: "PANTONE 7453 C", L: 66.52, a: -1.2, b: -38.49},
+		    {id: "PANTONE 7454 C", L: 56.81, a: -6.36, b: -29.38},
+		    {id: "PANTONE 7455 C", L: 39.89, a: 10.03, b: -51.36},
+		    {id: "PANTONE 7456 C", L: 47.83, a: 10.55, b: -41.76},
+		    {id: "PANTONE 2120 C", L: 81.12, a: 1.95, b: -22.04},
+		    {id: "PANTONE 2121 C", L: 69.11, a: -0.89, b: -30.58},
+		    {id: "PANTONE 2122 C", L: 70.88, a: 4.23, b: -34.45},
+		    {id: "PANTONE 2123 C", L: 61.21, a: 7.29, b: -44.96},
+		    {id: "PANTONE 2124 C", L: 53.61, a: 15.03, b: -51.46},
+		    {id: "PANTONE 2125 C", L: 44.59, a: 19.88, b: -59.24},
+		    {id: "PANTONE 2126 C", L: 30.37, a: 29.56, b: -68.52},
+		    {id: "PANTONE 2706 C", L: 84.07, a: 2.62, b: -18.41},
+		    {id: "PANTONE 2716 C", L: 71.38, a: 6.21, b: -34.48},
+		    {id: "PANTONE 2726 C", L: 42.09, a: 21.15, b: -63.67},
+		    {id: "PANTONE 2736 C", L: 23.71, a: 38.63, b: -75.73},
+		    {id: "PANTONE 2746 C", L: 19.12, a: 33.71, b: -66.62},
+		    {id: "PANTONE 2756 C", L: 16.22, a: 20.71, b: -49.04},
+		    {id: "PANTONE 2766 C", L: 11.94, a: 12.37, b: -34.08},
+		    {id: "PANTONE 2708 C", L: 81.33, a: -0.15, b: -22.8},
+		    {id: "PANTONE 2718 C", L: 56.42, a: 5.78, b: -52.59},
+		    {id: "PANTONE 2728 C", L: 32.68, a: 21.15, b: -71.67},
+		    {id: "PANTONE 2738 C", L: 14.24, a: 42.09, b: -72.61},
+		    {id: "PANTONE 2748 C", L: 13.93, a: 23.98, b: -55.46},
+		    {id: "PANTONE 2758 C", L: 13.49, a: 15.68, b: -45.68},
+		    {id: "PANTONE 2768 C", L: 11.64, a: 7.36, b: -31.54},
+		    {id: "PANTONE 2707 C", L: 84.94, a: -1.23, b: -19.37},
+		    {id: "PANTONE 2717 C", L: 78.54, a: -1.65, b: -28.87},
+		    {id: "PANTONE 2727 C", L: 52.21, a: 5.83, b: -63.1},
+		    {id: "PANTONE Blue 072 C", L: 17.5, a: 44.07, b: -76.94},
+		    {id: "PANTONE 2747 C", L: 13.93, a: 22.79, b: -55.53},
+		    {id: "PANTONE 2757 C", L: 13.43, a: 13.4, b: -44.0},
+		    {id: "PANTONE 2767 C", L: 16.09, a: 2.38, b: -25.49},
+		    {id: "PANTONE 277 C", L: 79.7, a: -3.9, b: -23.84},
+		    {id: "PANTONE 278 C", L: 72.74, a: -4.19, b: -34.82},
+		    {id: "PANTONE 279 C", L: 57.06, a: -1.67, b: -53.56},
+		    {id: "PANTONE Reflex Blue C", L: 15.29, a: 33.82, b: -68.83},
+		    {id: "PANTONE 280 C", L: 15.38, a: 16.29, b: -47.56},
+		    {id: "PANTONE 281 C", L: 13.14, a: 10.36, b: -42.06},
+		    {id: "PANTONE 282 C", L: 10.97, a: 3.5, b: -27.42},
+		    {id: "PANTONE 283 C", L: 76.41, a: -6.64, b: -30.16},
+		    {id: "PANTONE 284 C", L: 67.89, a: -7.05, b: -40.3},
+		    {id: "PANTONE 285 C", L: 45.75, a: -1.88, b: -62.36},
+		    {id: "PANTONE 286 C", L: 23.01, a: 20.37, b: -70.11},
+		    {id: "PANTONE 287 C", L: 21.06, a: 13.99, b: -57.53},
+		    {id: "PANTONE 288 C", L: 18.63, a: 9.69, b: -48.15},
+		    {id: "PANTONE 289 C", L: 13.11, a: 0.61, b: -22.4},
+		    {id: "PANTONE 3506 C", L: 40.02, a: 0.1, b: -48.67},
+		    {id: "PANTONE 3590 C", L: 37.84, a: 7.67, b: -43.94},
+		    {id: "PANTONE 3584 C", L: 27.29, a: 9.9, b: -39.86},
+		    {id: "PANTONE 3591 C", L: 18.62, a: 18.92, b: -53.75},
+		    {id: "PANTONE 3597 C", L: 23.67, a: 7.68, b: -39.63},
+		    {id: "PANTONE 3581 C", L: 22.26, a: 10.1, b: -38.07},
+		    {id: "PANTONE 3524 C", L: 18.82, a: 11.59, b: -24.09},
+		    {id: "PANTONE 4141 C", L: 42.55, a: 5.7, b: -39.91},
+		    {id: "PANTONE 4142 C", L: 33.65, a: 5.91, b: -32.68},
+		    {id: "PANTONE 4143 C", L: 35.32, a: 0.03, b: -20.17},
+		    {id: "PANTONE 4144 C", L: 25.75, a: 7.08, b: -19.87},
+		    {id: "PANTONE 4145 C", L: 21.64, a: 4.61, b: -18.97},
+		    {id: "PANTONE 4146 C", L: 11.56, a: 5.44, b: -17.38},
+		    {id: "PANTONE 4147 C", L: 14.79, a: 9.08, b: -18.91},
+		    {id: "PANTONE 7681 C", L: 68.33, a: 0.4, b: -24.49},
+		    {id: "PANTONE 7682 C", L: 55.39, a: 0.28, b: -33.08},
+		    {id: "PANTONE 7683 C", L: 44.8, a: 1.16, b: -40.79},
+		    {id: "PANTONE 7684 C", L: 39.3, a: 3.88, b: -42.1},
+		    {id: "PANTONE 7685 C", L: 35.98, a: 4.15, b: -43.17},
+		    {id: "PANTONE 7686 C", L: 33.48, a: 3.5, b: -43.97},
+		    {id: "PANTONE 7687 C", L: 28.41, a: 9.18, b: -46.71},
+		    {id: "PANTONE 2141 C", L: 74.11, a: -7.9, b: -31.59},
+		    {id: "PANTONE 2142 C", L: 68.53, a: -3.46, b: -37.17},
+		    {id: "PANTONE 2143 C", L: 54.6, a: -4.74, b: -45.85},
+		    {id: "PANTONE 2144 C", L: 40.99, a: -1.09, b: -54.95},
+		    {id: "PANTONE 2145 C", L: 31.6, a: 5.18, b: -59.03},
+		    {id: "PANTONE 2146 C", L: 22.76, a: 13.35, b: -57.14},
+		    {id: "PANTONE 2147 C", L: 17.63, a: 16.89, b: -51.8},
+		    {id: "PANTONE 545 C", L: 85.9, a: -3.16, b: -14.21},
+		    {id: "PANTONE 544 C", L: 83.91, a: -3.9, b: -16.7},
+		    {id: "PANTONE 543 C", L: 78.26, a: -5.78, b: -22.32},
+		    {id: "PANTONE 542 C", L: 68.75, a: -8.1, b: -29.74},
+		    {id: "PANTONE 541 C", L: 22.76, a: -4.8, b: -41.45},
+		    {id: "PANTONE 540 C", L: 17.91, a: -5.5, b: -31.98},
+		    {id: "PANTONE 539 C", L: 13.59, a: -5.63, b: -18.33},
+		    {id: "PANTONE 290 C", L: 84.93, a: -6.43, b: -17.92},
+		    {id: "PANTONE 291 C", L: 79.31, a: -8.78, b: -26.88},
+		    {id: "PANTONE 292 C", L: 69.45, a: -10.9, b: -39.32},
+		    {id: "PANTONE 293 C", L: 26.02, a: 12.61, b: -68.11},
+		    {id: "PANTONE 294 C", L: 18.59, a: 4.93, b: -43.65},
+		    {id: "PANTONE 295 C", L: 14.96, a: -0.95, b: -34.47},
+		    {id: "PANTONE 296 C", L: 9.36, a: -4.12, b: -14.56},
+		    {id: "PANTONE 2905 C", L: 77.28, a: -11.81, b: -27.92},
+		    {id: "PANTONE 2915 C", L: 69.81, a: -14.03, b: -37.59},
+		    {id: "PANTONE 2925 C", L: 59.8, a: -15.0, b: -48.67},
+		    {id: "PANTONE 2935 C", L: 34.44, a: -0.61, b: -66.16},
+		    {id: "PANTONE 2945 C", L: 29.28, a: -4.41, b: -54.63},
+		    {id: "PANTONE 2955 C", L: 20.71, a: -7.34, b: -35.35},
+		    {id: "PANTONE 2965 C", L: 13.31, a: -6.69, b: -20.92},
+		    {id: "PANTONE 2169 C", L: 68.98, a: -8.33, b: -27.21},
+		    {id: "PANTONE 2170 C", L: 61.05, a: -9.83, b: -32.44},
+		    {id: "PANTONE 2171 C", L: 61.91, a: -10.27, b: -45.51},
+		    {id: "PANTONE 2172 C", L: 49.31, a: -1.18, b: -56.93},
+		    {id: "PANTONE 2173 C", L: 51.92, a: -8.03, b: -55.12},
+		    {id: "PANTONE 2174 C", L: 46.41, a: -5.66, b: -59.5},
+		    {id: "PANTONE 2175 C", L: 40.82, a: -5.51, b: -63.18},
+		    {id: "PANTONE 2381 C", L: 59.56, a: -0.87, b: -46.65},
+		    {id: "PANTONE 2382 C", L: 53.85, a: -8.74, b: -53.46},
+		    {id: "PANTONE 2383 C", L: 46.32, a: -7.57, b: -40.83},
+		    {id: "PANTONE 2384 C", L: 37.71, a: -9.21, b: -45.96},
+		    {id: "PANTONE 2386 C", L: 43.79, a: 7.1, b: -57.57},
+		    {id: "PANTONE 2387 C", L: 41.07, a: 9.05, b: -63.64},
+		    {id: "PANTONE 2388 C", L: 33.71, a: 8.1, b: -64.44},
+		    {id: "PANTONE 4148 C", L: 59.21, a: -12.51, b: -22.52},
+		    {id: "PANTONE 4149 C", L: 67.87, a: -4.95, b: -22.05},
+		    {id: "PANTONE 4150 C", L: 51.08, a: -0.5, b: -39.68},
+		    {id: "PANTONE 4151 C", L: 40.26, a: -8.65, b: -48.89},
+		    {id: "PANTONE 4152 C", L: 33.47, a: 1.35, b: -44.3},
+		    {id: "PANTONE 4153 C", L: 32.18, a: 1.33, b: -41.25},
+		    {id: "PANTONE 4154 C", L: 26.56, a: -0.23, b: -36.07},
+		    {id: "PANTONE 297 C", L: 75.17, a: -17.89, b: -30.98},
+		    {id: "PANTONE 298 C", L: 69.05, a: -20.48, b: -38.89},
+		    {id: "PANTONE 299 C", L: 61.31, a: -22.16, b: -47.6},
+		    {id: "PANTONE 300 C", L: 35.95, a: -8.5, b: -63.35},
+		    {id: "PANTONE 301 C", L: 27.81, a: -11.39, b: -46.31},
+		    {id: "PANTONE 302 C", L: 21.44, a: -12.89, b: -28.77},
+		    {id: "PANTONE 303 C", L: 14.94, a: -8.72, b: -15.63},
+		    {id: "PANTONE 7688 C", L: 59.41, a: -12.04, b: -37.67},
+		    {id: "PANTONE 7689 C", L: 54.83, a: -14.38, b: -39.44},
+		    {id: "PANTONE 7690 C", L: 45.02, a: -15.37, b: -39.4},
+		    {id: "PANTONE 7691 C", L: 37.37, a: -12.37, b: -41.42},
+		    {id: "PANTONE 7692 C", L: 33.46, a: -8.26, b: -37.32},
+		    {id: "PANTONE 7693 C", L: 28.53, a: -5.82, b: -33.89},
+		    {id: "PANTONE 7694 C", L: 25.95, a: -5.2, b: -30.68},
+		    {id: "PANTONE 2148 C", L: 57.76, a: -7.78, b: -27.41},
+		    {id: "PANTONE 2149 C", L: 51.79, a: -8.66, b: -29.41},
+		    {id: "PANTONE 2150 C", L: 45.93, a: -9.09, b: -31.52},
+		    {id: "PANTONE 2151 C", L: 42.52, a: -5.84, b: -39.5},
+		    {id: "PANTONE 2152 C", L: 39.23, a: -9.7, b: -32.96},
+		    {id: "PANTONE 2153 C", L: 33.01, a: -10.08, b: -32.2},
+		    {id: "PANTONE 2154 C", L: 27.26, a: -2.15, b: -41.88},
+		    {id: "PANTONE 2183 C", L: 55.07, a: -22.2, b: -36.34},
+		    {id: "PANTONE 2184 C", L: 50.59, a: -12.24, b: -56.49},
+		    {id: "PANTONE 2185 C", L: 43.84, a: -22.13, b: -39.51},
+		    {id: "PANTONE 2186 C", L: 27.36, a: -7.81, b: -45.39},
+		    {id: "PANTONE 2187 C", L: 26.35, a: -9.8, b: -37.92},
+		    {id: "PANTONE 2188 C", L: 24.45, a: -10.33, b: -32.41},
+		    {id: "PANTONE 2189 C", L: 18.82, a: -8.77, b: -19.41},
+		    {id: "PANTONE 2975 C", L: 82.01, a: -15.19, b: -21.8},
+		    {id: "PANTONE 2985 C", L: 73.26, a: -21.47, b: -33.49},
+		    {id: "PANTONE 2995 C", L: 62.43, a: -26.07, b: -45.51},
+		    {id: "PANTONE 3005 C", L: 44.01, a: -19.86, b: -59.46},
+		    {id: "PANTONE 3015 C", L: 35.76, a: -21.44, b: -45.77},
+		    {id: "PANTONE 3025 C", L: 28.64, a: -20.73, b: -31.09},
+		    {id: "PANTONE 3035 C", L: 22.3, a: -16.58, b: -19.79},
+		    {id: "PANTONE 2190 C", L: 69.38, a: -17.58, b: -38.02},
+		    {id: "PANTONE 2191 C", L: 61.65, a: -18.3, b: -46.82},
+		    {id: "PANTONE 2192 C", L: 54.12, a: -21.89, b: -54.36},
+		    {id: "PANTONE 2193 C", L: 54.23, a: -17.88, b: -54.28},
+		    {id: "PANTONE 2194 C", L: 50.03, a: -19.94, b: -57.93},
+		    {id: "PANTONE 2195 C", L: 45.4, a: -9.61, b: -61.37},
+		    {id: "PANTONE 2196 C", L: 39.42, a: -16.22, b: -53.21},
+		    {id: "PANTONE 7695 C", L: 65.8, a: -10.12, b: -19.77},
+		    {id: "PANTONE 7696 C", L: 59.69, a: -13.4, b: -20.63},
+		    {id: "PANTONE 7697 C", L: 52.87, a: -12.92, b: -22.85},
+		    {id: "PANTONE 7698 C", L: 45.67, a: -10.87, b: -21.99},
+		    {id: "PANTONE 7699 C", L: 39.94, a: -9.96, b: -22.26},
+		    {id: "PANTONE 7700 C", L: 35.7, a: -10.34, b: -28.02},
+		    {id: "PANTONE 7701 C", L: 32.83, a: -16.45, b: -28.01},
+		    {id: "PANTONE 2176 C", L: 73.34, a: -4.08, b: -10.81},
+		    {id: "PANTONE 2177 C", L: 63.28, a: -8.39, b: -14.14},
+		    {id: "PANTONE 2178 C", L: 56.63, a: -9.36, b: -14.76},
+		    {id: "PANTONE 2179 C", L: 48.5, a: -10.56, b: -15.89},
+		    {id: "PANTONE 2180 C", L: 42.82, a: -11.7, b: -16.95},
+		    {id: "PANTONE 2181 C", L: 35.77, a: -12.22, b: -17.39},
+		    {id: "PANTONE 2182 C", L: 28.15, a: -12.16, b: -17.19},
+		    {id: "PANTONE 2204 C", L: 80.11, a: -7.58, b: -13.17},
+		    {id: "PANTONE 2205 C", L: 69.7, a: -9.93, b: -17.96},
+		    {id: "PANTONE 2206 C", L: 62.91, a: -8.63, b: -19.46},
+		    {id: "PANTONE 2207 C", L: 60.21, a: -12.46, b: -21.41},
+		    {id: "PANTONE 2208 C", L: 53.64, a: -11.69, b: -22.78},
+		    {id: "PANTONE 2209 C", L: 51.88, a: -13.74, b: -23.47},
+		    {id: "PANTONE 2210 C", L: 30.67, a: -9.47, b: -27.48},
+		    {id: "PANTONE 4155 C", L: 79.88, a: -3.56, b: -7.93},
+		    {id: "PANTONE 4156 C", L: 74.7, a: -10.3, b: -15.1},
+		    {id: "PANTONE 4157 C", L: 66.57, a: -18.69, b: -21.6},
+		    {id: "PANTONE 4158 C", L: 49.23, a: -15.84, b: -22.97},
+		    {id: "PANTONE 4159 C", L: 32.77, a: -14.18, b: -35.36},
+		    {id: "PANTONE 4160 C", L: 27.14, a: -13.93, b: -22.51},
+		    {id: "PANTONE 4161 C", L: 30.54, a: -6.81, b: -13.72},
+		    {id: "PANTONE 7457 C", L: 85.6, a: -8.13, b: -14.2},
+		    {id: "PANTONE 7458 C", L: 68.4, a: -15.42, b: -23.19},
+		    {id: "PANTONE 7459 C", L: 57.98, a: -18.89, b: -27.23},
+		    {id: "PANTONE 7460 C", L: 47.03, a: -39.44, b: -49.93},
+		    {id: "PANTONE 7461 C", L: 47.52, a: -17.74, b: -47.17},
+		    {id: "PANTONE 7462 C", L: 33.18, a: -7.04, b: -42.25},
+		    {id: "PANTONE 7463 C", L: 15.98, a: -4.38, b: -25.52},
+		    {id: "PANTONE 304 C", L: 83.12, a: -17.78, b: -19.02},
+		    {id: "PANTONE 305 C", L: 75.52, a: -25.84, b: -30.48},
+		    {id: "PANTONE 306 C", L: 66.2, a: -33.27, b: -41.19},
+		    {id: "PANTONE Process Blue C", L: 47.62, a: -32.01, b: -55.13},
+		    {id: "PANTONE 307 C", L: 38.31, a: -28.92, b: -47.95},
+		    {id: "PANTONE 308 C", L: 31.16, a: -27.14, b: -33.83},
+		    {id: "PANTONE 309 C", L: 20.98, a: -18.26, b: -16.53},
+		    {id: "PANTONE 635 C", L: 83.57, a: -14.68, b: -18.19},
+		    {id: "PANTONE 636 C", L: 80.21, a: -18.63, b: -22.55},
+		    {id: "PANTONE 637 C", L: 72.56, a: -25.81, b: -30.37},
+		    {id: "PANTONE 638 C", L: 64.04, a: -32.01, b: -38.15},
+		    {id: "PANTONE 639 C", L: 53.88, a: -35.9, b: -44.86},
+		    {id: "PANTONE 640 C", L: 46.57, a: -34.58, b: -47.47},
+		    {id: "PANTONE 641 C", L: 36.6, a: -28.2, b: -47.23},
+		    {id: "PANTONE 3577 C", L: 72.84, a: -10.09, b: -23.82},
+		    {id: "PANTONE 3545 C", L: 68.65, a: -34.95, b: -32.85},
+		    {id: "PANTONE 3551 C", L: 57.67, a: -54.59, b: -36.74},
+		    {id: "PANTONE 3538 C", L: 54.64, a: -28.67, b: -48.09},
+		    {id: "PANTONE 3553 C", L: 39.9, a: -25.2, b: -52.24},
+		    {id: "PANTONE 2454 C", L: 48.55, a: -16.14, b: -29.29},
+		    {id: "PANTONE 3526 C", L: 59.08, a: -7.1, b: -8.25},
+		    {id: "PANTONE 2389 C", L: 61.32, a: -15.7, b: -32.77},
+		    {id: "PANTONE 2390 C", L: 47.74, a: -15.59, b: -36.53},
+		    {id: "PANTONE 2391 C", L: 48.63, a: -22.01, b: -31.76},
+		    {id: "PANTONE 2392 C", L: 39.99, a: -15.22, b: -26.32},
+		    {id: "PANTONE 2393 C", L: 53.55, a: -29.67, b: -46.41},
+		    {id: "PANTONE 2394 C", L: 50.72, a: -29.28, b: -52.5},
+		    {id: "PANTONE 2396 C", L: 55.11, a: -38.98, b: -29.4},
+		    {id: "PANTONE 7702 C", L: 63.94, a: -21.36, b: -28.06},
+		    {id: "PANTONE 7703 C", L: 58.02, a: -26.49, b: -32.5},
+		    {id: "PANTONE 7704 C", L: 48.92, a: -28.78, b: -36.34},
+		    {id: "PANTONE 7705 C", L: 41.39, a: -24.76, b: -34.64},
+		    {id: "PANTONE 7706 C", L: 39.37, a: -22.54, b: -32.55},
+		    {id: "PANTONE 7707 C", L: 36.29, a: -20.6, b: -28.17},
+		    {id: "PANTONE 7708 C", L: 31.99, a: -20.22, b: -25.6},
+		    {id: "PANTONE 2197 C", L: 78.7, a: -23.78, b: -24.12},
+		    {id: "PANTONE 2198 C", L: 74.24, a: -29.23, b: -28.94},
+		    {id: "PANTONE 2199 C", L: 68.05, a: -35.97, b: -34.46},
+		    {id: "PANTONE 2200 C", L: 62.56, a: -28.24, b: -30.78},
+		    {id: "PANTONE 2201 C", L: 62.26, a: -40.13, b: -39.28},
+		    {id: "PANTONE 2202 C", L: 59.66, a: -35.15, b: -48.51},
+		    {id: "PANTONE 2203 C", L: 48.68, a: -33.18, b: -36.77},
+		    {id: "PANTONE 628 C", L: 85.64, a: -10.85, b: -11.06},
+		    {id: "PANTONE 629 C", L: 80.89, a: -15.6, b: -15.86},
+		    {id: "PANTONE 630 C", L: 74.74, a: -20.81, b: -20.44},
+		    {id: "PANTONE 631 C", L: 66.18, a: -26.62, b: -26.09},
+		    {id: "PANTONE 632 C", L: 53.88, a: -32.73, b: -31.59},
+		    {id: "PANTONE 633 C", L: 41.62, a: -33.29, b: -34.15},
+		    {id: "PANTONE 634 C", L: 33.7, a: -29.41, b: -33.82},
+		    {id: "PANTONE 310 C", L: 77.92, a: -26.43, b: -24.4},
+		    {id: "PANTONE 311 C", L: 71.5, a: -34.02, b: -30.5},
+		    {id: "PANTONE 312 C", L: 60.07, a: -44.31, b: -38.43},
+		    {id: "PANTONE 313 C", L: 51.15, a: -46.62, b: -42.12},
+		    {id: "PANTONE 314 C", L: 44.63, a: -43.22, b: -37.14},
+		    {id: "PANTONE 315 C", L: 36.18, a: -36.25, b: -27.9},
+		    {id: "PANTONE 316 C", L: 26.09, a: -22.22, b: -14.21},
+		    {id: "PANTONE 3105 C", L: 78.18, a: -28.36, b: -21.82},
+		    {id: "PANTONE 3115 C", L: 69.94, a: -39.0, b: -27.78},
+		    {id: "PANTONE 3125 C", L: 61.53, a: -48.09, b: -32.44},
+		    {id: "PANTONE 3135 C", L: 48.78, a: -53.36, b: -35.04},
+		    {id: "PANTONE 3145 C", L: 41.53, a: -44.99, b: -27.89},
+		    {id: "PANTONE 3155 C", L: 34.15, a: -38.54, b: -22.83},
+		    {id: "PANTONE 3165 C", L: 27.24, a: -29.8, b: -16.73},
+		    {id: "PANTONE 7709 C", L: 67.18, a: -22.26, b: -17.59},
+		    {id: "PANTONE 7710 C", L: 61.29, a: -34.65, b: -23.28},
+		    {id: "PANTONE 7711 C", L: 53.76, a: -42.96, b: -26.55},
+		    {id: "PANTONE 7712 C", L: 47.57, a: -39.14, b: -28.39},
+		    {id: "PANTONE 7713 C", L: 44.37, a: -40.61, b: -22.76},
+		    {id: "PANTONE 7714 C", L: 42.54, a: -38.42, b: -19.58},
+		    {id: "PANTONE 7715 C", L: 35.31, a: -30.73, b: -15.65},
+		    {id: "PANTONE 2218 C", L: 67.39, a: -17.36, b: -17.09},
+		    {id: "PANTONE 2219 C", L: 62.48, a: -19.41, b: -18.68},
+		    {id: "PANTONE 2220 C", L: 57.41, a: -20.87, b: -20.11},
+		    {id: "PANTONE 2221 C", L: 52.37, a: -23.36, b: -21.07},
+		    {id: "PANTONE 2222 C", L: 49.11, a: -22.83, b: -22.22},
+		    {id: "PANTONE 2223 C", L: 44.76, a: -23.09, b: -23.15},
+		    {id: "PANTONE 2224 C", L: 38.93, a: -22.83, b: -24.15},
+		    {id: "PANTONE 317 C", L: 86.78, a: -15.88, b: -10.54},
+		    {id: "PANTONE 318 C", L: 81.95, a: -24.84, b: -15.4},
+		    {id: "PANTONE 319 C", L: 74.19, a: -37.85, b: -20.27},
+		    {id: "PANTONE 320 C", L: 53.06, a: -62.05, b: -25.64},
+		    {id: "PANTONE 321 C", L: 48.34, a: -55.75, b: -22.9},
+		    {id: "PANTONE 322 C", L: 40.15, a: -44.99, b: -17.69},
+		    {id: "PANTONE 323 C", L: 33.8, a: -35.71, b: -13.34},
+		    {id: "PANTONE 2225 C", L: 79.5, a: -25.84, b: -20.01},
+		    {id: "PANTONE 2226 C", L: 74.23, a: -33.82, b: -23.82},
+		    {id: "PANTONE 2227 C", L: 70.99, a: -27.53, b: -19.25},
+		    {id: "PANTONE 2228 C", L: 57.63, a: -52.4, b: -32.11},
+		    {id: "PANTONE 2229 C", L: 53.9, a: -53.49, b: -33.54},
+		    {id: "PANTONE 2230 C", L: 50.07, a: -38.9, b: -26.45},
+		    {id: "PANTONE 2231 C", L: 43.78, a: -39.19, b: -27.48},
+		    {id: "PANTONE 4162 C", L: 81.01, a: -15.69, b: -2.26},
+		    {id: "PANTONE 4163 C", L: 76.75, a: -22.0, b: -1.7},
+		    {id: "PANTONE 4164 C", L: 48.05, a: -32.56, b: -2.58},
+		    {id: "PANTONE 4165 C", L: 39.52, a: -25.27, b: -4.2},
+		    {id: "PANTONE 4166 C", L: 45.24, a: -18.73, b: -6.02},
+		    {id: "PANTONE 4167 C", L: 38.7, a: -19.97, b: -2.28},
+		    {id: "PANTONE 4168 C", L: 26.63, a: -11.59, b: -5.72},
+		    {id: "PANTONE 7464 C", L: 80.13, a: -16.25, b: -6.83},
+		    {id: "PANTONE 7465 C", L: 70.27, a: -39.69, b: -4.43},
+		    {id: "PANTONE 7466 C", L: 61.41, a: -53.81, b: -24.55},
+		    {id: "PANTONE 7467 C", L: 56.21, a: -58.81, b: -25.57},
+		    {id: "PANTONE 7468 C", L: 43.13, a: -22.45, b: -32.91},
+		    {id: "PANTONE 7469 C", L: 35.09, a: -21.23, b: -34.09},
+		    {id: "PANTONE 7470 C", L: 33.23, a: -21.56, b: -24.29},
+		    {id: "PANTONE 7471 C", L: 81.58, a: -30.49, b: -9.46},
+		    {id: "PANTONE 7472 C", L: 68.65, a: -28.97, b: -9.79},
+		    {id: "PANTONE 7473 C", L: 56.3, a: -34.74, b: -4.83},
+		    {id: "PANTONE 7474 C", L: 42.95, a: -34.56, b: -19.56},
+		    {id: "PANTONE 7475 C", L: 47.6, a: -16.96, b: -8.99},
+		    {id: "PANTONE 7476 C", L: 30.72, a: -18.94, b: -11.13},
+		    {id: "PANTONE 7477 C", L: 29.62, a: -10.86, b: -14.39},
+		    {id: "PANTONE 2211 C", L: 60.47, a: -12.06, b: -13.25},
+		    {id: "PANTONE 2212 C", L: 51.68, a: -14.33, b: -15.3},
+		    {id: "PANTONE 2213 C", L: 43.32, a: -18.43, b: -13.36},
+		    {id: "PANTONE 2214 C", L: 42.51, a: -16.72, b: -15.55},
+		    {id: "PANTONE 2215 C", L: 33.39, a: -10.72, b: -15.1},
+		    {id: "PANTONE 2216 C", L: 30.22, a: -9.15, b: -12.09},
+		    {id: "PANTONE 2217 C", L: 20.86, a: -14.67, b: -10.64},
+		    {id: "PANTONE 5523 C", L: 81.32, a: -6.91, b: -8.2},
+		    {id: "PANTONE 5513 C", L: 78.51, a: -8.14, b: -9.15},
+		    {id: "PANTONE 5503 C", L: 71.83, a: -10.71, b: -10.61},
+		    {id: "PANTONE 5493 C", L: 66.1, a: -12.54, b: -11.55},
+		    {id: "PANTONE 5483 C", L: 52.09, a: -16.74, b: -13.18},
+		    {id: "PANTONE 5473 C", L: 35.45, a: -19.97, b: -14.27},
+		    {id: "PANTONE 5463 C", L: 13.76, a: -9.98, b: -8.63},
+		    {id: "PANTONE 2232 C", L: 67.06, a: -19.46, b: -12.71},
+		    {id: "PANTONE 2233 C", L: 63.21, a: -23.08, b: -15.61},
+		    {id: "PANTONE 2234 C", L: 60.12, a: -23.99, b: -14.59},
+		    {id: "PANTONE 2235 C", L: 55.1, a: -27.74, b: -17.07},
+		    {id: "PANTONE 2236 C", L: 54.28, a: -27.37, b: -16.15},
+		    {id: "PANTONE 2237 C", L: 49.99, a: -28.99, b: -16.38},
+		    {id: "PANTONE 2238 C", L: 37.73, a: -31.93, b: -18.73},
+		    {id: "PANTONE 7716 C", L: 54.14, a: -37.82, b: -10.69},
+		    {id: "PANTONE 7717 C", L: 47.37, a: -42.62, b: -10.23},
+		    {id: "PANTONE 7718 C", L: 41.74, a: -42.36, b: -12.3},
+		    {id: "PANTONE 7719 C", L: 38.93, a: -36.66, b: -9.79},
+		    {id: "PANTONE 7720 C", L: 35.51, a: -33.04, b: -6.98},
+		    {id: "PANTONE 7721 C", L: 34.21, a: -28.34, b: -10.03},
+		    {id: "PANTONE 7722 C", L: 29.56, a: -23.86, b: -9.15},
+		    {id: "PANTONE 324 C", L: 82.93, a: -19.71, b: -10.84},
+		    {id: "PANTONE 325 C", L: 75.39, a: -31.47, b: -13.04},
+		    {id: "PANTONE 326 C", L: 63.32, a: -47.76, b: -13.13},
+		    {id: "PANTONE 327 C", L: 45.71, a: -63.61, b: -8.22},
+		    {id: "PANTONE 328 C", L: 39.63, a: -52.36, b: -8.5},
+		    {id: "PANTONE 329 C", L: 36.12, a: -44.93, b: -7.87},
+		    {id: "PANTONE 330 C", L: 30.31, a: -25.83, b: -4.88},
+		    {id: "PANTONE 2455 C", L: 73.37, a: -15.17, b: -3.54},
+		    {id: "PANTONE 3533 C", L: 79.78, a: -37.77, b: -3.21},
+		    {id: "PANTONE 3534 C", L: 61.22, a: -64.83, b: -10.84},
+		    {id: "PANTONE 2456 C", L: 57.22, a: -34.29, b: -3.09},
+		    {id: "PANTONE 3560 C", L: 56.83, a: -60.79, b: -10.53},
+		    {id: "PANTONE 3557 C", L: 44.02, a: -45.39, b: -16.14},
+		    {id: "PANTONE 3541 C", L: 50.0, a: -61.64, b: -24.66},
+		    {id: "PANTONE 3242 C", L: 80.69, a: -32.82, b: -11.35},
+		    {id: "PANTONE 3252 C", L: 75.54, a: -42.99, b: -12.74},
+		    {id: "PANTONE 3262 C", L: 66.51, a: -58.61, b: -13.67},
+		    {id: "PANTONE 3272 C", L: 55.77, a: -69.4, b: -14.7},
+		    {id: "PANTONE 3282 C", L: 45.87, a: -57.23, b: -10.09},
+		    {id: "PANTONE 3292 C", L: 31.23, a: -37.06, b: -5.75},
+		    {id: "PANTONE 3302 C", L: 27.6, a: -25.22, b: -3.75},
+		    {id: "PANTONE 2397 C", L: 65.48, a: -44.51, b: -20.82},
+		    {id: "PANTONE 2398 C", L: 67.02, a: -45.3, b: -12.92},
+		    {id: "PANTONE 2399 C", L: 58.81, a: -67.53, b: -14.28},
+		    {id: "PANTONE 2400 C", L: 62.23, a: -54.67, b: -4.33},
+		    {id: "PANTONE 2401 C", L: 61.38, a: -35.63, b: -5.12},
+		    {id: "PANTONE 2402 C", L: 54.02, a: -61.93, b: -5.34},
+		    {id: "PANTONE 2403 C", L: 46.2, a: -67.58, b: -10.53},
+		    {id: "PANTONE 2457 C", L: 66.64, a: -12.87, b: 2.19},
+		    {id: "PANTONE 2458 C", L: 58.71, a: -19.93, b: 3.92},
+		    {id: "PANTONE 2459 C", L: 65.01, a: -32.73, b: 2.91},
+		    {id: "PANTONE 2460 C", L: 66.5, a: -22.79, b: -8.1},
+		    {id: "PANTONE 2461 C", L: 55.27, a: -31.43, b: -10.21},
+		    {id: "PANTONE 2462 C", L: 54.52, a: -18.87, b: -3.47},
+		    {id: "PANTONE 2463 C", L: 47.06, a: -10.29, b: -2.48},
+		    {id: "PANTONE 4169 C", L: 79.15, a: -5.73, b: -3.17},
+		    {id: "PANTONE 4170 C", L: 74.66, a: -8.13, b: -5.7},
+		    {id: "PANTONE 4171 C", L: 72.88, a: -10.21, b: -5.33},
+		    {id: "PANTONE 4172 C", L: 68.3, a: -16.67, b: -5.63},
+		    {id: "PANTONE 4173 C", L: 74.59, a: -21.12, b: -9.09},
+		    {id: "PANTONE 4174 C", L: 73.52, a: -19.75, b: -10.63},
+		    {id: "PANTONE 4175 C", L: 73.03, a: -10.72, b: -12.94},
+		    {id: "PANTONE 3245 C", L: 82.46, a: -32.18, b: -8.07},
+		    {id: "PANTONE 3255 C", L: 76.46, a: -45.4, b: -8.5},
+		    {id: "PANTONE 3265 C", L: 69.61, a: -58.7, b: -8.26},
+		    {id: "PANTONE 3275 C", L: 60.84, a: -71.0, b: -6.95},
+		    {id: "PANTONE 3285 C", L: 52.32, a: -57.64, b: -5.66},
+		    {id: "PANTONE 3295 C", L: 41.49, a: -49.92, b: -3.76},
+		    {id: "PANTONE 3305 C", L: 28.59, a: -25.6, b: -1.41},
+		    {id: "PANTONE 3248 C", L: 75.63, a: -32.76, b: -2.9},
+		    {id: "PANTONE 3258 C", L: 71.81, a: -38.61, b: -5.0},
+		    {id: "PANTONE 3268 C", L: 60.14, a: -55.02, b: -1.64},
+		    {id: "PANTONE 3278 C", L: 53.53, a: -62.27, b: 1.32},
+		    {id: "PANTONE 3288 C", L: 45.14, a: -55.9, b: 1.09},
+		    {id: "PANTONE 3298 C", L: 37.13, a: -43.24, b: 1.15},
+		    {id: "PANTONE 3308 C", L: 25.48, a: -23.08, b: 1.05},
+		    {id: "PANTONE 566 C", L: 84.93, a: -13.12, b: -3.17},
+		    {id: "PANTONE 565 C", L: 81.42, a: -19.18, b: -3.98},
+		    {id: "PANTONE 564 C", L: 76.02, a: -24.05, b: -5.12},
+		    {id: "PANTONE 563 C", L: 70.22, a: -28.64, b: -5.3},
+		    {id: "PANTONE 562 C", L: 40.63, a: -36.05, b: -3.69},
+		    {id: "PANTONE 561 C", L: 32.74, a: -27.89, b: -1.33},
+		    {id: "PANTONE 560 C", L: 22.01, a: -14.47, b: 0.4},
+		    {id: "PANTONE 573 C", L: 86.68, a: -16.25, b: -4.53},
+		    {id: "PANTONE 572 C", L: 84.49, a: -20.73, b: -4.9},
+		    {id: "PANTONE 571 C", L: 82.48, a: -23.74, b: -5.32},
+		    {id: "PANTONE 570 C", L: 74.91, a: -32.74, b: -5.04},
+		    {id: "PANTONE 569 C", L: 45.79, a: -47.37, b: -2.54},
+		    {id: "PANTONE 568 C", L: 39.52, a: -35.35, b: -1.03},
+		    {id: "PANTONE 567 C", L: 23.37, a: -17.15, b: 0.52},
+		    {id: "PANTONE 559 C", L: 79.03, a: -11.17, b: 0.99},
+		    {id: "PANTONE 558 C", L: 73.93, a: -14.06, b: 1.57},
+		    {id: "PANTONE 557 C", L: 68.48, a: -16.78, b: 2.31},
+		    {id: "PANTONE 556 C", L: 62.48, a: -20.45, b: 4.4},
+		    {id: "PANTONE 555 C", L: 42.21, a: -29.18, b: 9.19},
+		    {id: "PANTONE 554 C", L: 34.38, a: -24.68, b: 7.78},
+		    {id: "PANTONE 553 C", L: 26.93, a: -15.07, b: 6.17},
+		    {id: "PANTONE 2404 C", L: 72.79, a: -10.24, b: 9.32},
+		    {id: "PANTONE 2406 C", L: 62.28, a: -13.44, b: 5.76},
+		    {id: "PANTONE 2407 C", L: 55.22, a: -16.21, b: 7.31},
+		    {id: "PANTONE 2408 C", L: 46.93, a: -22.82, b: 12.47},
+		    {id: "PANTONE 2409 C", L: 39.85, a: -14.27, b: 12.0},
+		    {id: "PANTONE 2410 C", L: 36.01, a: -14.01, b: 11.89},
+		    {id: "PANTONE 2411 C", L: 24.27, a: -20.77, b: 15.41},
+		    {id: "PANTONE 5595 C", L: 81.26, a: -6.32, b: 0.3},
+		    {id: "PANTONE 5585 C", L: 74.94, a: -9.0, b: 0.01},
+		    {id: "PANTONE 5575 C", L: 67.97, a: -10.67, b: -0.36},
+		    {id: "PANTONE 5565 C", L: 61.75, a: -12.5, b: 0.03},
+		    {id: "PANTONE 5555 C", L: 50.09, a: -15.35, b: 0.97},
+		    {id: "PANTONE 5545 C", L: 41.01, a: -16.84, b: 1.56},
+		    {id: "PANTONE 5535 C", L: 17.51, a: -12.07, b: 0.85},
+		    {id: "PANTONE 5665 C", L: 78.45, a: -4.37, b: 0.6},
+		    {id: "PANTONE 5655 C", L: 75.27, a: -5.11, b: 0.93},
+		    {id: "PANTONE 5645 C", L: 70.9, a: -6.03, b: 1.44},
+		    {id: "PANTONE 5635 C", L: 66.07, a: -7.01, b: 2.13},
+		    {id: "PANTONE 5625 C", L: 53.48, a: -9.13, b: 4.0},
+		    {id: "PANTONE 5615 C", L: 46.46, a: -10.22, b: 5.32},
+		    {id: "PANTONE 5605 C", L: 20.97, a: -10.81, b: 3.7},
+		    {id: "PANTONE 4176 C", L: 81.81, a: -3.16, b: -0.23},
+		    {id: "PANTONE 4177 C", L: 76.7, a: -1.86, b: 3.91},
+		    {id: "PANTONE 4178 C", L: 70.53, a: -4.26, b: 6.58},
+		    {id: "PANTONE 4179 C", L: 65.44, a: -8.37, b: 13.33},
+		    {id: "PANTONE 4180 C", L: 62.0, a: -6.02, b: 8.66},
+		    {id: "PANTONE 4181 C", L: 53.76, a: -9.0, b: 6.51},
+		    {id: "PANTONE 4182 C", L: 48.69, a: -6.41, b: 5.15},
+		    {id: "PANTONE 4183 C", L: 77.16, a: -3.11, b: 1.36},
+		    {id: "PANTONE 4184 C", L: 68.23, a: -6.22, b: 0.35},
+		    {id: "PANTONE 4185 C", L: 64.32, a: -8.89, b: -3.06},
+		    {id: "PANTONE 4186 C", L: 55.94, a: -11.89, b: -5.38},
+		    {id: "PANTONE 4187 C", L: 50.32, a: -5.56, b: -5.49},
+		    {id: "PANTONE 4188 C", L: 37.21, a: -8.55, b: -4.83},
+		    {id: "PANTONE 4189 C", L: 28.42, a: -13.45, b: -10.59},
+		    {id: "PANTONE 5527 C", L: 79.82, a: -3.71, b: -4.14},
+		    {id: "PANTONE 5517 C", L: 76.48, a: -4.56, b: -4.26},
+		    {id: "PANTONE 5507 C", L: 70.25, a: -5.85, b: -4.35},
+		    {id: "PANTONE 5497 C", L: 61.3, a: -7.35, b: -4.46},
+		    {id: "PANTONE 5487 C", L: 48.24, a: -9.52, b: -4.18},
+		    {id: "PANTONE 5477 C", L: 36.69, a: -11.35, b: -3.49},
+		    {id: "PANTONE 5467 C", L: 19.31, a: -10.85, b: -1.99},
+		    {id: "PANTONE 4190 C", L: 71.48, a: -4.48, b: 2.15},
+		    {id: "PANTONE 4191 C", L: 66.21, a: -6.16, b: -2.4},
+		    {id: "PANTONE 4192 C", L: 60.19, a: -6.75, b: 1.82},
+		    {id: "PANTONE 4193 C", L: 43.02, a: -3.38, b: 4.49},
+		    {id: "PANTONE 4194 C", L: 40.72, a: -4.52, b: -2.93},
+		    {id: "PANTONE 4195 C", L: 42.81, a: 1.19, b: -3.26},
+		    {id: "PANTONE 4196 C", L: 35.26, a: -2.97, b: -6.82},
+		    {id: "PANTONE 4197 C", L: 62.38, a: -6.4, b: 1.03},
+		    {id: "PANTONE 4198 C", L: 50.65, a: -8.58, b: 2.17},
+		    {id: "PANTONE 4199 C", L: 42.6, a: -7.03, b: 2.21},
+		    {id: "PANTONE 4200 C", L: 43.88, a: -7.79, b: 0.48},
+		    {id: "PANTONE 4201 C", L: 41.66, a: -10.24, b: 0.76},
+		    {id: "PANTONE 4202 C", L: 31.13, a: -9.2, b: 0.06},
+		    {id: "PANTONE 4203 C", L: 28.26, a: -11.12, b: 0.91},
+		    {id: "PANTONE 621 C", L: 88.1, a: -5.76, b: -1.42},
+		    {id: "PANTONE 622 C", L: 80.51, a: -8.7, b: -1.03},
+		    {id: "PANTONE 623 C", L: 72.56, a: -12.42, b: -0.66},
+		    {id: "PANTONE 624 C", L: 62.05, a: -15.76, b: 0.06},
+		    {id: "PANTONE 625 C", L: 49.51, a: -19.56, b: 0.78},
+		    {id: "PANTONE 626 C", L: 35.12, a: -21.54, b: 1.2},
+		    {id: "PANTONE 627 C", L: 18.37, a: -13.68, b: 0.0},
+		    {id: "PANTONE 331 C", L: 86.64, a: -23.0, b: -3.47},
+		    {id: "PANTONE 332 C", L: 83.97, a: -30.33, b: -3.89},
+		    {id: "PANTONE 333 C", L: 78.45, a: -46.88, b: -4.02},
+		    {id: "PANTONE Green C", L: 57.69, a: -77.29, b: 0.01},
+		    {id: "PANTONE 334 C", L: 51.67, a: -67.42, b: 0.21},
+		    {id: "PANTONE 335 C", L: 43.14, a: -51.65, b: 1.47},
+		    {id: "PANTONE 336 C", L: 36.03, a: -39.36, b: 1.48},
+		    {id: "PANTONE 2239 C", L: 73.05, a: -53.11, b: -4.7},
+		    {id: "PANTONE 2240 C", L: 66.28, a: -67.15, b: -2.46},
+		    {id: "PANTONE 2241 C", L: 60.64, a: -27.35, b: -1.78},
+		    {id: "PANTONE 2242 C", L: 56.63, a: -61.39, b: 6.18},
+		    {id: "PANTONE 2243 C", L: 53.46, a: -43.96, b: 0.26},
+		    {id: "PANTONE 2244 C", L: 47.3, a: -33.21, b: -0.61},
+		    {id: "PANTONE 2245 C", L: 44.9, a: -70.05, b: 10.02},
+		    {id: "PANTONE 337 C", L: 80.13, a: -26.28, b: 0.89},
+		    {id: "PANTONE 338 C", L: 76.03, a: -34.34, b: 0.39},
+		    {id: "PANTONE 339 C", L: 63.4, a: -53.28, b: 5.55},
+		    {id: "PANTONE 340 C", L: 52.04, a: -64.98, b: 13.21},
+		    {id: "PANTONE 341 C", L: 43.38, a: -47.98, b: 8.7},
+		    {id: "PANTONE 342 C", L: 37.17, a: -38.32, b: 7.18},
+		    {id: "PANTONE 343 C", L: 31.76, a: -26.77, b: 5.43},
+		    {id: "PANTONE 7723 C", L: 61.88, a: -32.85, b: 5.84},
+		    {id: "PANTONE 7724 C", L: 53.85, a: -44.04, b: 8.62},
+		    {id: "PANTONE 7725 C", L: 47.2, a: -54.64, b: 12.64},
+		    {id: "PANTONE 7726 C", L: 42.98, a: -53.1, b: 12.79},
+		    {id: "PANTONE 7727 C", L: 39.2, a: -45.67, b: 11.42},
+		    {id: "PANTONE 7728 C", L: 36.85, a: -39.12, b: 8.81},
+		    {id: "PANTONE 7729 C", L: 31.54, a: -31.5, b: 1.63},
+		    {id: "PANTONE 3375 C", L: 82.59, a: -37.37, b: 2.29},
+		    {id: "PANTONE 3385 C", L: 77.09, a: -47.87, b: 5.27},
+		    {id: "PANTONE 3395 C", L: 67.81, a: -66.16, b: 11.05},
+		    {id: "PANTONE 3405 C", L: 59.09, a: -79.44, b: 18.69},
+		    {id: "PANTONE 3415 C", L: 41.65, a: -51.6, b: 12.42},
+		    {id: "PANTONE 3425 C", L: 35.51, a: -39.22, b: 9.23},
+		    {id: "PANTONE 3435 C", L: 26.1, a: -22.14, b: 5.49},
+		    {id: "PANTONE 2246 C", L: 80.94, a: -18.32, b: 3.84},
+		    {id: "PANTONE 2247 C", L: 72.01, a: -30.24, b: 8.59},
+		    {id: "PANTONE 2248 C", L: 68.58, a: -30.47, b: 9.91},
+		    {id: "PANTONE 2249 C", L: 63.08, a: -34.0, b: 11.88},
+		    {id: "PANTONE 2250 C", L: 63.18, a: -55.04, b: 17.55},
+		    {id: "PANTONE 2251 C", L: 60.44, a: -58.65, b: 15.45},
+		    {id: "PANTONE 2252 C", L: 56.53, a: -77.38, b: 30.85},
+		    {id: "PANTONE 2412 C", L: 76.19, a: -50.83, b: 15.99},
+		    {id: "PANTONE 2413 C", L: 66.32, a: -44.25, b: 6.69},
+		    {id: "PANTONE 2414 C", L: 66.29, a: -55.98, b: 15.68},
+		    {id: "PANTONE 2416 C", L: 62.09, a: -58.61, b: 13.95},
+		    {id: "PANTONE 2417 C", L: 56.98, a: -42.99, b: 14.02},
+		    {id: "PANTONE 2418 C", L: 45.05, a: -75.67, b: 22.53},
+		    {id: "PANTONE 2419 C", L: 44.16, a: -46.05, b: 7.1},
+		    {id: "PANTONE 344 C", L: 81.85, a: -24.19, b: 9.66},
+		    {id: "PANTONE 345 C", L: 80.04, a: -28.71, b: 9.3},
+		    {id: "PANTONE 346 C", L: 74.97, a: -37.19, b: 13.48},
+		    {id: "PANTONE 347 C", L: 53.5, a: -64.03, b: 29.39},
+		    {id: "PANTONE 348 C", L: 46.69, a: -53.75, b: 25.0},
+		    {id: "PANTONE 349 C", L: 38.76, a: -36.69, b: 18.51},
+		    {id: "PANTONE 350 C", L: 31.08, a: -19.37, b: 11.55},
+		    {id: "PANTONE 351 C", L: 84.95, a: -28.02, b: 11.23},
+		    {id: "PANTONE 352 C", L: 83.33, a: -34.68, b: 12.26},
+		    {id: "PANTONE 353 C", L: 81.64, a: -39.48, b: 14.56},
+		    {id: "PANTONE 354 C", L: 60.37, a: -76.35, b: 39.21},
+		    {id: "PANTONE 355 C", L: 51.98, a: -66.83, b: 33.55},
+		    {id: "PANTONE 356 C", L: 43.24, a: -50.52, b: 26.6},
+		    {id: "PANTONE 357 C", L: 32.39, a: -26.52, b: 14.51},
+		    {id: "PANTONE 7478 C", L: 84.46, a: -29.3, b: 6.33},
+		    {id: "PANTONE 7479 C", L: 73.4, a: -58.59, b: 25.94},
+		    {id: "PANTONE 7480 C", L: 66.01, a: -68.53, b: 23.04},
+		    {id: "PANTONE 7481 C", L: 62.78, a: -72.64, b: 35.1},
+		    {id: "PANTONE 7482 C", L: 54.87, a: -64.46, b: 26.82},
+		    {id: "PANTONE 7483 C", L: 34.87, a: -26.34, b: 14.04},
+		    {id: "PANTONE 7484 C", L: 31.62, a: -30.25, b: 5.76},
+		    {id: "PANTONE 2253 C", L: 88.01, a: -18.98, b: 6.17},
+		    {id: "PANTONE 2254 C", L: 84.0, a: -22.13, b: 11.9},
+		    {id: "PANTONE 2255 C", L: 77.73, a: -33.32, b: 18.82},
+		    {id: "PANTONE 2256 C", L: 70.27, a: -45.06, b: 27.33},
+		    {id: "PANTONE 2257 C", L: 61.06, a: -56.33, b: 33.27},
+		    {id: "PANTONE 2258 C", L: 47.3, a: -52.08, b: 39.36},
+		    {id: "PANTONE 2259 C", L: 41.22, a: -43.39, b: 32.9},
+		    {id: "PANTONE 2464 C", L: 70.67, a: -33.32, b: 28.69},
+		    {id: "PANTONE 2465 C", L: 40.71, a: -35.91, b: 25.49},
+		    {id: "PANTONE 3522 C", L: 46.88, a: -69.08, b: 31.95},
+		    {id: "PANTONE 3536 C", L: 39.36, a: -78.13, b: 18.92},
+		    {id: "PANTONE 3500 C", L: 37.55, a: -57.83, b: 19.89},
+		    {id: "PANTONE 3537 C", L: 24.82, a: -39.07, b: 16.31},
+		    {id: "PANTONE 2466 C", L: 31.03, a: -14.92, b: -3.76},
+		    {id: "PANTONE 7730 C", L: 55.55, a: -32.82, b: 17.31},
+		    {id: "PANTONE 7731 C", L: 49.44, a: -40.88, b: 22.92},
+		    {id: "PANTONE 7732 C", L: 43.24, a: -44.96, b: 20.43},
+		    {id: "PANTONE 7733 C", L: 40.23, a: -38.74, b: 15.11},
+		    {id: "PANTONE 7734 C", L: 36.0, a: -26.05, b: 11.38},
+		    {id: "PANTONE 7735 C", L: 33.59, a: -16.97, b: 10.35},
+		    {id: "PANTONE 7736 C", L: 33.26, a: -14.45, b: 6.07},
+		    {id: "PANTONE 7737 C", L: 61.83, a: -33.27, b: 45.14},
+		    {id: "PANTONE 7738 C", L: 58.98, a: -43.23, b: 38.95},
+		    {id: "PANTONE 7739 C", L: 56.2, a: -45.73, b: 34.01},
+		    {id: "PANTONE 7740 C", L: 52.98, a: -40.53, b: 31.98},
+		    {id: "PANTONE 7741 C", L: 50.14, a: -34.46, b: 29.72},
+		    {id: "PANTONE 7742 C", L: 45.71, a: -25.59, b: 24.95},
+		    {id: "PANTONE 7743 C", L: 40.58, a: -21.43, b: 18.53},
+		    {id: "PANTONE 4204 C", L: 81.88, a: -9.81, b: 15.28},
+		    {id: "PANTONE 4205 C", L: 74.84, a: -15.08, b: 22.41},
+		    {id: "PANTONE 4206 C", L: 67.5, a: -16.31, b: 15.42},
+		    {id: "PANTONE 4207 C", L: 62.67, a: -17.46, b: 14.12},
+		    {id: "PANTONE 4208 C", L: 43.06, a: -23.58, b: 8.04},
+		    {id: "PANTONE 4209 C", L: 34.4, a: -13.37, b: 1.4},
+		    {id: "PANTONE 4210 C", L: 30.69, a: -13.28, b: 2.17},
+		    {id: "PANTONE 2260 C", L: 80.23, a: -13.77, b: 9.98},
+		    {id: "PANTONE 2261 C", L: 72.05, a: -17.95, b: 14.45},
+		    {id: "PANTONE 2262 C", L: 66.88, a: -17.36, b: 11.6},
+		    {id: "PANTONE 2263 C", L: 58.04, a: -19.03, b: 15.71},
+		    {id: "PANTONE 2264 C", L: 57.23, a: -24.56, b: 21.52},
+		    {id: "PANTONE 2265 C", L: 48.81, a: -20.63, b: 18.88},
+		    {id: "PANTONE 2266 C", L: 31.99, a: -22.37, b: 23.26},
+		    {id: "PANTONE 358 C", L: 82.89, a: -25.23, b: 27.89},
+		    {id: "PANTONE 359 C", L: 80.77, a: -29.26, b: 31.96},
+		    {id: "PANTONE 360 C", L: 70.73, a: -43.41, b: 47.1},
+		    {id: "PANTONE 361 C", L: 62.99, a: -50.9, b: 51.97},
+		    {id: "PANTONE 362 C", L: 57.88, a: -40.67, b: 45.54},
+		    {id: "PANTONE 363 C", L: 52.51, a: -35.0, b: 41.14},
+		    {id: "PANTONE 364 C", L: 45.11, a: -26.76, b: 35.05},
+		    {id: "PANTONE 2267 C", L: 82.92, a: -32.98, b: 24.26},
+		    {id: "PANTONE 2268 C", L: 78.47, a: -44.28, b: 32.88},
+		    {id: "PANTONE 2269 C", L: 74.76, a: -38.89, b: 35.68},
+		    {id: "PANTONE 2270 C", L: 70.34, a: -60.48, b: 44.98},
+		    {id: "PANTONE 2271 C", L: 64.68, a: -68.26, b: 50.33},
+		    {id: "PANTONE 2272 C", L: 54.33, a: -55.53, b: 49.8},
+		    {id: "PANTONE 2273 C", L: 41.54, a: -37.11, b: 32.41},
+		    {id: "PANTONE 2420 C", L: 69.1, a: -65.62, b: 35.26},
+		    {id: "PANTONE 2421 C", L: 64.69, a: -60.7, b: 69.59},
+		    {id: "PANTONE 2422 C", L: 58.58, a: -62.57, b: 46.02},
+		    {id: "PANTONE 2423 C", L: 58.4, a: -74.31, b: 52.81},
+		    {id: "PANTONE 2424 C", L: 56.79, a: -53.72, b: 60.69},
+		    {id: "PANTONE 2426 C", L: 47.94, a: -68.86, b: 43.55},
+		    {id: "PANTONE 2427 C", L: 34.16, a: -37.17, b: 27.58},
+		    {id: "PANTONE 7485 C", L: 87.0, a: -8.64, b: 11.38},
+		    {id: "PANTONE 7486 C", L: 85.48, a: -21.45, b: 29.65},
+		    {id: "PANTONE 7487 C", L: 80.88, a: -42.19, b: 46.96},
+		    {id: "PANTONE 7488 C", L: 77.45, a: -48.83, b: 54.47},
+		    {id: "PANTONE 7489 C", L: 64.0, a: -30.66, b: 37.59},
+		    {id: "PANTONE 7490 C", L: 58.69, a: -23.84, b: 34.09},
+		    {id: "PANTONE 7491 C", L: 53.56, a: -13.17, b: 35.72},
+		    {id: "PANTONE 2274 C", L: 85.74, a: -8.43, b: 15.29},
+		    {id: "PANTONE 2275 C", L: 84.34, a: -16.74, b: 28.9},
+		    {id: "PANTONE 2276 C", L: 64.71, a: -21.67, b: 39.29},
+		    {id: "PANTONE 2277 C", L: 55.14, a: -36.94, b: 50.47},
+		    {id: "PANTONE 2278 C", L: 48.19, a: -31.02, b: 42.83},
+		    {id: "PANTONE 2279 C", L: 48.8, a: -22.03, b: 39.1},
+		    {id: "PANTONE 2280 C", L: 40.85, a: -22.12, b: 36.08},
+		    {id: "PANTONE 365 C", L: 85.54, a: -20.76, b: 36.29},
+		    {id: "PANTONE 366 C", L: 83.53, a: -24.57, b: 41.37},
+		    {id: "PANTONE 367 C", L: 80.13, a: -30.72, b: 49.65},
+		    {id: "PANTONE 368 C", L: 69.88, a: -40.34, b: 62.08},
+		    {id: "PANTONE 369 C", L: 61.95, a: -38.82, b: 59.32},
+		    {id: "PANTONE 370 C", L: 53.78, a: -26.7, b: 49.39},
+		    {id: "PANTONE 371 C", L: 38.92, a: -12.8, b: 31.62},
+		    {id: "PANTONE 3570 C", L: 80.33, a: -30.22, b: 91.71},
+		    {id: "PANTONE 3507 C", L: 78.29, a: -27.75, b: 82.68},
+		    {id: "PANTONE 3561 C", L: 71.43, a: -44.25, b: 73.97},
+		    {id: "PANTONE 3501 C", L: 62.72, a: -49.41, b: 60.21},
+		    {id: "PANTONE 3529 C", L: 59.68, a: -54.57, b: 50.37},
+		    {id: "PANTONE 3539 C", L: 56.09, a: -44.78, b: 44.41},
+		    {id: "PANTONE 3508 C", L: 47.36, a: -19.17, b: 35.02},
+		    {id: "PANTONE 2281 C", L: 89.21, a: -14.12, b: 33.25},
+		    {id: "PANTONE 2282 C", L: 87.83, a: -21.3, b: 33.24},
+		    {id: "PANTONE 2283 C", L: 82.75, a: -34.13, b: 50.65},
+		    {id: "PANTONE 2284 C", L: 80.45, a: -22.11, b: 36.36},
+		    {id: "PANTONE 2285 C", L: 79.5, a: -40.68, b: 58.09},
+		    {id: "PANTONE 2286 C", L: 73.94, a: -47.02, b: 74.35},
+		    {id: "PANTONE 2287 C", L: 70.17, a: -54.26, b: 68.0},
+		    {id: "PANTONE 372 C", L: 89.85, a: -18.74, b: 39.49},
+		    {id: "PANTONE 373 C", L: 88.88, a: -21.8, b: 44.94},
+		    {id: "PANTONE 374 C", L: 87.46, a: -25.66, b: 52.02},
+		    {id: "PANTONE 375 C", L: 79.05, a: -40.57, b: 76.24},
+		    {id: "PANTONE 376 C", L: 70.3, a: -37.39, b: 72.79},
+		    {id: "PANTONE 377 C", L: 59.28, a: -25.27, b: 59.73},
+		    {id: "PANTONE 378 C", L: 39.55, a: -11.32, b: 35.6},
+		    {id: "PANTONE 2288 C", L: 86.21, a: -20.3, b: 45.04},
+		    {id: "PANTONE 2289 C", L: 83.23, a: -16.9, b: 40.82},
+		    {id: "PANTONE 2290 C", L: 81.33, a: -33.99, b: 73.01},
+		    {id: "PANTONE 2291 C", L: 79.14, a: -34.09, b: 85.71},
+		    {id: "PANTONE 2292 C", L: 74.45, a: -35.25, b: 70.07},
+		    {id: "PANTONE 2293 C", L: 72.45, a: -39.06, b: 83.4},
+		    {id: "PANTONE 2294 C", L: 63.73, a: -33.72, b: 67.75},
+		    {id: "PANTONE 2295 C", L: 90.57, a: -14.01, b: 43.26},
+		    {id: "PANTONE 2296 C", L: 88.43, a: -19.03, b: 57.03},
+		    {id: "PANTONE 2297 C", L: 84.19, a: -27.26, b: 76.97},
+		    {id: "PANTONE 2298 C", L: 82.59, a: -25.99, b: 56.07},
+		    {id: "PANTONE 2299 C", L: 78.37, a: -31.37, b: 65.26},
+		    {id: "PANTONE 2300 C", L: 74.18, a: -22.07, b: 57.5},
+		    {id: "PANTONE 2301 C", L: 65.97, a: -24.59, b: 62.61},
+		    {id: "PANTONE 580 C", L: 83.47, a: -11.54, b: 19.01},
+		    {id: "PANTONE 579 C", L: 81.21, a: -13.07, b: 20.91},
+		    {id: "PANTONE 578 C", L: 80.03, a: -14.07, b: 22.11},
+		    {id: "PANTONE 577 C", L: 75.91, a: -16.98, b: 27.94},
+		    {id: "PANTONE 576 C", L: 60.25, a: -22.65, b: 36.04},
+		    {id: "PANTONE 575 C", L: 50.7, a: -18.32, b: 33.3},
+		    {id: "PANTONE 574 C", L: 36.38, a: -10.45, b: 21.13},
+		    {id: "PANTONE 4211 C", L: 84.92, a: -10.37, b: 29.26},
+		    {id: "PANTONE 4212 C", L: 65.96, a: -26.45, b: 47.15},
+		    {id: "PANTONE 4213 C", L: 55.34, a: -24.33, b: 40.78},
+		    {id: "PANTONE 4214 C", L: 47.46, a: -15.77, b: 13.69},
+		    {id: "PANTONE 4215 C", L: 43.24, a: -16.28, b: 20.84},
+		    {id: "PANTONE 4216 C", L: 34.39, a: -18.03, b: 25.23},
+		    {id: "PANTONE 4217 C", L: 37.25, a: -14.56, b: 28.89},
+		    {id: "PANTONE 5807 C", L: 82.96, a: -4.33, b: 15.71},
+		    {id: "PANTONE 5797 C", L: 79.47, a: -5.35, b: 19.05},
+		    {id: "PANTONE 5787 C", L: 75.61, a: -6.14, b: 21.96},
+		    {id: "PANTONE 5777 C", L: 66.43, a: -7.5, b: 28.41},
+		    {id: "PANTONE 5767 C", L: 57.59, a: -8.23, b: 32.68},
+		    {id: "PANTONE 5757 C", L: 46.4, a: -8.48, b: 34.46},
+		    {id: "PANTONE 5747 C", L: 27.38, a: -7.95, b: 21.53},
+		    {id: "PANTONE 5875 C", L: 82.16, a: -2.98, b: 21.11},
+		    {id: "PANTONE 5865 C", L: 79.71, a: -3.4, b: 23.58},
+		    {id: "PANTONE 5855 C", L: 75.54, a: -3.12, b: 23.9},
+		    {id: "PANTONE 5845 C", L: 69.03, a: -3.52, b: 28.69},
+		    {id: "PANTONE 5835 C", L: 62.83, a: -3.58, b: 32.54},
+		    {id: "PANTONE 5825 C", L: 53.53, a: -3.2, b: 36.2},
+		    {id: "PANTONE 5815 C", L: 34.03, a: -2.39, b: 25.72},
+		    {id: "PANTONE 4218 C", L: 72.67, a: -3.97, b: 7.62},
+		    {id: "PANTONE 4219 C", L: 68.64, a: -2.98, b: 5.35},
+		    {id: "PANTONE 4220 C", L: 56.99, a: -1.7, b: 6.09},
+		    {id: "PANTONE 4221 C", L: 51.62, a: -4.51, b: 12.51},
+		    {id: "PANTONE 4222 C", L: 48.77, a: -2.21, b: 6.68},
+		    {id: "PANTONE 4223 C", L: 43.41, a: -4.79, b: 10.09},
+		    {id: "PANTONE 4224 C", L: 29.52, a: -6.17, b: 6.83},
+		    {id: "PANTONE 5803 C", L: 79.31, a: -4.23, b: 11.92},
+		    {id: "PANTONE 5793 C", L: 74.01, a: -5.52, b: 13.77},
+		    {id: "PANTONE 5783 C", L: 68.07, a: -6.18, b: 16.6},
+		    {id: "PANTONE 5773 C", L: 58.7, a: -7.34, b: 20.33},
+		    {id: "PANTONE 5763 C", L: 50.31, a: -8.11, b: 22.64},
+		    {id: "PANTONE 5753 C", L: 41.97, a: -8.61, b: 23.39},
+		    {id: "PANTONE 5743 C", L: 29.56, a: -8.47, b: 18.02},
+		    {id: "PANTONE 4225 C", L: 55.18, a: 3.22, b: 6.95},
+		    {id: "PANTONE 4226 C", L: 53.91, a: -0.77, b: 13.38},
+		    {id: "PANTONE 4227 C", L: 43.78, a: -0.98, b: 10.87},
+		    {id: "PANTONE 4228 C", L: 36.5, a: -1.22, b: 13.0},
+		    {id: "PANTONE 4229 C", L: 38.46, a: -0.99, b: 8.04},
+		    {id: "PANTONE 4230 C", L: 35.77, a: 2.62, b: 3.51},
+		    {id: "PANTONE 4231 C", L: 39.44, a: 3.17, b: 5.81},
+		    {id: "PANTONE 7492 C", L: 79.69, a: -12.11, b: 32.81},
+		    {id: "PANTONE 7493 C", L: 77.69, a: -8.76, b: 20.51},
+		    {id: "PANTONE 7494 C", L: 68.9, a: -11.59, b: 14.15},
+		    {id: "PANTONE 7495 C", L: 60.96, a: -12.85, b: 43.47},
+		    {id: "PANTONE 7496 C", L: 53.58, a: -17.42, b: 49.2},
+		    {id: "PANTONE 7497 C", L: 48.42, a: 0.4, b: 14.33},
+		    {id: "PANTONE 7498 C", L: 39.88, a: -7.83, b: 22.6},
+		    {id: "PANTONE 2302 C", L: 72.43, a: -12.62, b: 39.43},
+		    {id: "PANTONE 2303 C", L: 69.46, a: -16.96, b: 41.72},
+		    {id: "PANTONE 2304 C", L: 67.51, a: -13.64, b: 43.73},
+		    {id: "PANTONE 2305 C", L: 65.55, a: -15.16, b: 66.54},
+		    {id: "PANTONE 2306 C", L: 55.46, a: -14.66, b: 48.49},
+		    {id: "PANTONE 2307 C", L: 44.81, a: -11.77, b: 44.92},
+		    {id: "PANTONE 2308 C", L: 36.11, a: -4.14, b: 33.13},
+		    {id: "PANTONE 7744 C", L: 74.31, a: -12.72, b: 69.98},
+		    {id: "PANTONE 7745 C", L: 68.69, a: -11.52, b: 61.88},
+		    {id: "PANTONE 7746 C", L: 62.33, a: -10.14, b: 50.98},
+		    {id: "PANTONE 7747 C", L: 56.79, a: -10.18, b: 44.88},
+		    {id: "PANTONE 7748 C", L: 51.92, a: -9.11, b: 38.15},
+		    {id: "PANTONE 7749 C", L: 47.3, a: -6.81, b: 31.38},
+		    {id: "PANTONE 7750 C", L: 42.22, a: -5.86, b: 25.86},
+		    {id: "PANTONE 379 C", L: 89.84, a: -13.58, b: 57.54},
+		    {id: "PANTONE 380 C", L: 87.87, a: -16.52, b: 70.31},
+		    {id: "PANTONE 381 C", L: 84.62, a: -20.44, b: 83.95},
+		    {id: "PANTONE 382 C", L: 82.15, a: -21.7, b: 83.86},
+		    {id: "PANTONE 383 C", L: 68.55, a: -14.34, b: 74.07},
+		    {id: "PANTONE 384 C", L: 59.56, a: -9.94, b: 64.52},
+		    {id: "PANTONE 385 C", L: 47.53, a: -4.22, b: 42.47},
+		    {id: "PANTONE 386 C", L: 91.47, a: -12.37, b: 57.83},
+		    {id: "PANTONE 387 C", L: 89.74, a: -16.06, b: 76.3},
+		    {id: "PANTONE 388 C", L: 89.11, a: -17.23, b: 80.34},
+		    {id: "PANTONE 389 C", L: 85.36, a: -21.78, b: 93.45},
+		    {id: "PANTONE 390 C", L: 74.1, a: -17.48, b: 85.84},
+		    {id: "PANTONE 391 C", L: 60.54, a: -8.72, b: 67.27},
+		    {id: "PANTONE 392 C", L: 50.82, a: -5.1, b: 53.91},
+		    {id: "PANTONE 587 C", L: 89.41, a: -8.64, b: 39.24},
+		    {id: "PANTONE 586 C", L: 88.27, a: -10.06, b: 46.54},
+		    {id: "PANTONE 585 C", L: 86.98, a: -11.33, b: 49.85},
+		    {id: "PANTONE 584 C", L: 83.98, a: -13.3, b: 59.12},
+		    {id: "PANTONE 583 C", L: 74.91, a: -15.47, b: 71.27},
+		    {id: "PANTONE 582 C", L: 57.12, a: -8.39, b: 56.27},
+		    {id: "PANTONE 581 C", L: 39.26, a: -3.36, b: 34.12},
+		    {id: "PANTONE 4232 C", L: 81.3, a: -11.26, b: 77.29},
+		    {id: "PANTONE 4233 C", L: 75.09, a: -11.45, b: 80.57},
+		    {id: "PANTONE 4234 C", L: 76.22, a: -11.66, b: 46.21},
+		    {id: "PANTONE 4235 C", L: 71.03, a: -5.05, b: 23.37},
+		    {id: "PANTONE 4236 C", L: 75.82, a: -7.23, b: 39.14},
+		    {id: "PANTONE 4237 C", L: 66.79, a: -2.8, b: 32.46},
+		    {id: "PANTONE 4238 C", L: 56.94, a: -4.59, b: 27.56},
+		    {id: "PANTONE 393 C", L: 92.26, a: -9.46, b: 54.69},
+		    {id: "PANTONE 394 C", L: 90.99, a: -12.02, b: 76.29},
+		    {id: "PANTONE 395 C", L: 90.32, a: -12.81, b: 83.15},
+		    {id: "PANTONE 396 C", L: 87.0, a: -15.35, b: 98.32},
+		    {id: "PANTONE 397 C", L: 73.5, a: -10.53, b: 85.43},
+		    {id: "PANTONE 398 C", L: 66.49, a: -7.84, b: 75.2},
+		    {id: "PANTONE 399 C", L: 60.32, a: -4.37, b: 68.43},
+		    {id: "PANTONE 3935 C", L: 91.53, a: -8.5, b: 64.7},
+		    {id: "PANTONE 3945 C", L: 90.12, a: -9.14, b: 90.72},
+		    {id: "PANTONE 3955 C", L: 88.1, a: -8.54, b: 103.79},
+		    {id: "PANTONE 3965 C", L: 87.14, a: -7.74, b: 102.91},
+		    {id: "PANTONE 3975 C", L: 68.28, a: -2.42, b: 79.42},
+		    {id: "PANTONE 3985 C", L: 56.41, a: -0.73, b: 60.45},
+		    {id: "PANTONE 3995 C", L: 39.31, a: -0.26, b: 35.02},
+		    {id: "PANTONE 600 C", L: 92.41, a: -5.16, b: 35.19},
+		    {id: "PANTONE 601 C", L: 91.59, a: -5.69, b: 40.99},
+		    {id: "PANTONE 602 C", L: 91.08, a: -6.55, b: 50.49},
+		    {id: "PANTONE 603 C", L: 88.51, a: -6.88, b: 69.12},
+		    {id: "PANTONE 604 C", L: 86.77, a: -6.5, b: 78.42},
+		    {id: "PANTONE 605 C", L: 82.31, a: -4.84, b: 87.46},
+		    {id: "PANTONE 606 C", L: 74.41, a: -1.25, b: 87.76},
+		    {id: "PANTONE 607 C", L: 90.3, a: -4.73, b: 34.05},
+		    {id: "PANTONE 608 C", L: 88.99, a: -5.64, b: 42.24},
+		    {id: "PANTONE 609 C", L: 87.66, a: -6.08, b: 48.81},
+		    {id: "PANTONE 610 C", L: 84.57, a: -6.27, b: 60.66},
+		    {id: "PANTONE 611 C", L: 80.06, a: -5.63, b: 72.19},
+		    {id: "PANTONE 612 C", L: 71.98, a: -3.11, b: 79.68},
+		    {id: "PANTONE 613 C", L: 64.66, a: -0.52, b: 74.67},
+		    {id: "PANTONE 461 C", L: 88.65, a: -3.14, b: 33.0},
+		    {id: "PANTONE 460 C", L: 85.9, a: -3.09, b: 42.02},
+		    {id: "PANTONE 459 C", L: 82.6, a: -2.7, b: 51.83},
+		    {id: "PANTONE 458 C", L: 80.35, a: -2.27, b: 54.16},
+		    {id: "PANTONE 457 C", L: 66.1, a: 1.9, b: 63.74},
+		    {id: "PANTONE 456 C", L: 59.78, a: 0.76, b: 51.7},
+		    {id: "PANTONE 455 C", L: 39.22, a: 1.5, b: 32.52},
+		    {id: "PANTONE 614 C", L: 85.05, a: -3.36, b: 27.04},
+		    {id: "PANTONE 615 C", L: 82.62, a: -3.61, b: 30.62},
+		    {id: "PANTONE 616 C", L: 80.25, a: -3.7, b: 33.1},
+		    {id: "PANTONE 617 C", L: 73.59, a: -3.76, b: 41.45},
+		    {id: "PANTONE 618 C", L: 65.31, a: -3.16, b: 49.31},
+		    {id: "PANTONE 619 C", L: 60.01, a: -2.55, b: 52.07},
+		    {id: "PANTONE 620 C", L: 51.88, a: -1.16, b: 49.95},
+		    {id: "PANTONE 7751 C", L: 74.31, a: -0.58, b: 52.99},
+		    {id: "PANTONE 7752 C", L: 73.03, a: 2.78, b: 67.1},
+		    {id: "PANTONE 7753 C", L: 67.58, a: 4.31, b: 63.42},
+		    {id: "PANTONE 7754 C", L: 57.07, a: 3.73, b: 49.6},
+		    {id: "PANTONE 7755 C", L: 50.36, a: 1.83, b: 39.04},
+		    {id: "PANTONE 7756 C", L: 43.49, a: 0.54, b: 28.19},
+		    {id: "PANTONE 7757 C", L: 39.77, a: -0.06, b: 24.42},
+		    {id: "PANTONE 7758 C", L: 78.35, a: -4.7, b: 76.52},
+		    {id: "PANTONE 7759 C", L: 72.41, a: -3.62, b: 73.83},
+		    {id: "PANTONE 7760 C", L: 55.34, a: -2.04, b: 45.68},
+		    {id: "PANTONE 7761 C", L: 46.97, a: -4.59, b: 31.37},
+		    {id: "PANTONE 7762 C", L: 40.59, a: -7.6, b: 21.79},
+		    {id: "PANTONE 7763 C", L: 38.08, a: -5.2, b: 17.03},
+		    {id: "PANTONE 7764 C", L: 35.34, a: -3.96, b: 16.56},
+		    {id: "PANTONE 7765 C", L: 71.69, a: -7.43, b: 65.13},
+		    {id: "PANTONE 7766 C", L: 68.6, a: -5.65, b: 63.22},
+		    {id: "PANTONE 7767 C", L: 64.44, a: -3.67, b: 53.84},
+		    {id: "PANTONE 7768 C", L: 53.43, a: -0.5, b: 39.26},
+		    {id: "PANTONE 7769 C", L: 41.76, a: 2.08, b: 26.06},
+		    {id: "PANTONE 7770 C", L: 38.16, a: 0.65, b: 19.01},
+		    {id: "PANTONE 7771 C", L: 31.1, a: -1.0, b: 12.66},
+		    {id: "PANTONE 4545 C", L: 81.62, a: -0.21, b: 20.4},
+		    {id: "PANTONE 4535 C", L: 79.32, a: -0.32, b: 23.16},
+		    {id: "PANTONE 4525 C", L: 74.94, a: 0.26, b: 26.08},
+		    {id: "PANTONE 4515 C", L: 67.49, a: 1.01, b: 29.98},
+		    {id: "PANTONE 4505 C", L: 56.53, a: 2.46, b: 36.52},
+		    {id: "PANTONE 4495 C", L: 51.07, a: 3.21, b: 38.5},
+		    {id: "PANTONE 4485 C", L: 34.91, a: 4.49, b: 27.11},
+		    {id: "PANTONE 2323 C", L: 72.05, a: 0.22, b: 11.03},
+		    {id: "PANTONE 2324 C", L: 67.32, a: 2.45, b: 15.37},
+		    {id: "PANTONE 2325 C", L: 60.21, a: 3.06, b: 15.34},
+		    {id: "PANTONE 2326 C", L: 53.04, a: 2.89, b: 16.48},
+		    {id: "PANTONE 2327 C", L: 50.88, a: 0.38, b: 17.79},
+		    {id: "PANTONE 2328 C", L: 44.24, a: 3.51, b: 18.92},
+		    {id: "PANTONE 2329 C", L: 38.71, a: 3.22, b: 17.62},
+		    {id: "PANTONE 4239 C", L: 79.02, a: 1.94, b: 4.14},
+		    {id: "PANTONE 4240 C", L: 77.88, a: 2.73, b: 10.21},
+		    {id: "PANTONE 4241 C", L: 71.11, a: 3.09, b: 16.63},
+		    {id: "PANTONE 4242 C", L: 50.83, a: 4.58, b: 21.66},
+		    {id: "PANTONE 4243 C", L: 47.03, a: 8.02, b: 18.24},
+		    {id: "PANTONE 4244 C", L: 46.27, a: 7.59, b: 15.38},
+		    {id: "PANTONE 4245 C", L: 34.71, a: 3.13, b: 9.19},
+		    {id: "PANTONE 454 C", L: 80.14, a: -1.0, b: 12.44},
+		    {id: "PANTONE 453 C", L: 75.69, a: -1.03, b: 15.11},
+		    {id: "PANTONE 452 C", L: 69.22, a: -1.01, b: 20.27},
+		    {id: "PANTONE 451 C", L: 61.25, a: -1.27, b: 26.32},
+		    {id: "PANTONE 450 C", L: 32.32, a: 4.2, b: 23.33},
+		    {id: "PANTONE 449 C", L: 30.49, a: 2.87, b: 19.93},
+		    {id: "PANTONE 448 C", L: 28.74, a: 2.06, b: 15.31},
+		    {id: "PANTONE 7499 C", L: 91.46, a: -0.55, b: 22.56},
+		    {id: "PANTONE 7500 C", L: 84.54, a: 1.54, b: 19.04},
+		    {id: "PANTONE 7501 C", L: 81.35, a: 2.7, b: 20.52},
+		    {id: "PANTONE 7502 C", L: 76.11, a: 4.14, b: 24.76},
+		    {id: "PANTONE 7503 C", L: 64.08, a: 2.11, b: 25.23},
+		    {id: "PANTONE 7504 C", L: 53.3, a: 9.27, b: 17.07},
+		    {id: "PANTONE 7505 C", L: 44.26, a: 11.51, b: 22.62},
+		    {id: "PANTONE 4246 C", L: 79.39, a: 2.21, b: 9.6},
+		    {id: "PANTONE 4247 C", L: 79.19, a: 4.59, b: 10.27},
+		    {id: "PANTONE 4248 C", L: 79.73, a: 4.93, b: 13.21},
+		    {id: "PANTONE 4249 C", L: 72.19, a: 5.87, b: 16.83},
+		    {id: "PANTONE 4250 C", L: 70.13, a: 4.61, b: 16.11},
+		    {id: "PANTONE 4251 C", L: 68.08, a: 5.91, b: 20.74},
+		    {id: "PANTONE 4252 C", L: 68.02, a: 5.77, b: 15.02},
+		    {id: "PANTONE 468 C", L: 82.67, a: 3.67, b: 18.68},
+		    {id: "PANTONE 467 C", L: 77.68, a: 5.55, b: 23.94},
+		    {id: "PANTONE 466 C", L: 71.28, a: 7.5, b: 28.18},
+		    {id: "PANTONE 465 C", L: 64.86, a: 9.91, b: 34.02},
+		    {id: "PANTONE 464 C", L: 43.8, a: 18.93, b: 36.1},
+		    {id: "PANTONE 463 C", L: 36.96, a: 14.84, b: 28.67},
+		    {id: "PANTONE 462 C", L: 32.07, a: 8.13, b: 19.41},
+		    {id: "PANTONE 4253 C", L: 69.37, a: 6.69, b: 12.08},
+		    {id: "PANTONE 4254 C", L: 66.54, a: 11.54, b: 23.74},
+		    {id: "PANTONE 4255 C", L: 63.9, a: 6.44, b: 16.59},
+		    {id: "PANTONE 4256 C", L: 61.87, a: 7.74, b: 17.26},
+		    {id: "PANTONE 4257 C", L: 54.5, a: 9.55, b: 8.04},
+		    {id: "PANTONE 4258 C", L: 41.35, a: 8.77, b: 3.4},
+		    {id: "PANTONE 4259 C", L: 17.6, a: 3.76, b: 4.92},
+		    {id: "PANTONE 3599 C", L: 79.62, a: 3.64, b: 32.88},
+		    {id: "PANTONE 2467 C", L: 63.75, a: 12.17, b: 23.7},
+		    {id: "PANTONE 2468 C", L: 49.71, a: 17.75, b: 22.6},
+		    {id: "PANTONE 2469 C", L: 43.87, a: 21.94, b: 26.14},
+		    {id: "PANTONE 2470 C", L: 55.36, a: 8.33, b: 18.15},
+		    {id: "PANTONE 2471 C", L: 59.55, a: 10.4, b: 11.92},
+		    {id: "PANTONE 2472 C", L: 30.69, a: 13.12, b: 19.0},
+		    {id: "PANTONE 7506 C", L: 88.91, a: 4.31, b: 18.72},
+		    {id: "PANTONE 7507 C", L: 87.59, a: 10.49, b: 30.11},
+		    {id: "PANTONE 7508 C", L: 77.65, a: 10.88, b: 32.72},
+		    {id: "PANTONE 7509 C", L: 71.3, a: 14.46, b: 40.36},
+		    {id: "PANTONE 7510 C", L: 62.65, a: 19.7, b: 47.43},
+		    {id: "PANTONE 7511 C", L: 56.63, a: 21.97, b: 50.53},
+		    {id: "PANTONE 7512 C", L: 49.41, a: 24.5, b: 50.0},
+		    {id: "PANTONE 719 C", L: 83.32, a: 10.48, b: 20.61},
+		    {id: "PANTONE 720 C", L: 78.37, a: 14.18, b: 27.27},
+		    {id: "PANTONE 721 C", L: 72.3, a: 18.04, b: 34.15},
+		    {id: "PANTONE 722 C", L: 61.68, a: 23.51, b: 43.54},
+		    {id: "PANTONE 723 C", L: 52.75, a: 26.45, b: 48.92},
+		    {id: "PANTONE 724 C", L: 41.3, a: 27.34, b: 45.51},
+		    {id: "PANTONE 725 C", L: 34.98, a: 25.28, b: 37.45},
+		    {id: "PANTONE 475 C", L: 86.29, a: 10.97, b: 15.09},
+		    {id: "PANTONE 474 C", L: 83.71, a: 13.77, b: 18.7},
+		    {id: "PANTONE 473 C", L: 81.52, a: 16.11, b: 22.05},
+		    {id: "PANTONE 472 C", L: 71.93, a: 24.84, b: 34.46},
+		    {id: "PANTONE 471 C", L: 51.93, a: 34.05, b: 48.0},
+		    {id: "PANTONE 470 C", L: 47.29, a: 28.66, b: 39.85},
+		    {id: "PANTONE 469 C", L: 31.47, a: 17.31, b: 24.43},
+		    {id: "PANTONE 726 C", L: 80.19, a: 9.0, b: 18.71},
+		    {id: "PANTONE 727 C", L: 76.1, a: 11.0, b: 21.71},
+		    {id: "PANTONE 728 C", L: 69.78, a: 13.51, b: 26.36},
+		    {id: "PANTONE 729 C", L: 58.69, a: 17.31, b: 32.84},
+		    {id: "PANTONE 730 C", L: 49.01, a: 20.04, b: 39.24},
+		    {id: "PANTONE 731 C", L: 34.27, a: 21.03, b: 37.1},
+		    {id: "PANTONE 732 C", L: 27.81, a: 19.3, b: 30.24},
+		    {id: "PANTONE 2316 C", L: 66.39, a: 10.83, b: 19.46},
+		    {id: "PANTONE 2317 C", L: 60.11, a: 14.37, b: 27.05},
+		    {id: "PANTONE 2318 C", L: 53.42, a: 15.88, b: 30.0},
+		    {id: "PANTONE 2319 C", L: 43.61, a: 17.13, b: 32.37},
+		    {id: "PANTONE 2320 C", L: 34.17, a: 16.33, b: 28.37},
+		    {id: "PANTONE 2321 C", L: 37.59, a: 10.76, b: 19.01},
+		    {id: "PANTONE 2322 C", L: 25.03, a: 9.66, b: 15.69},
+		    {id: "PANTONE 2309 C", L: 84.38, a: 7.31, b: 11.86},
+		    {id: "PANTONE 2310 C", L: 79.31, a: 7.28, b: 11.43},
+		    {id: "PANTONE 2311 C", L: 71.41, a: 11.34, b: 20.1},
+		    {id: "PANTONE 2312 C", L: 65.81, a: 8.68, b: 14.78},
+		    {id: "PANTONE 2313 C", L: 64.9, a: 15.09, b: 28.64},
+		    {id: "PANTONE 2314 C", L: 54.4, a: 18.03, b: 34.92},
+		    {id: "PANTONE 2315 C", L: 40.23, a: 28.96, b: 45.56},
+		    {id: "PANTONE 4685 C", L: 81.84, a: 7.68, b: 12.77},
+		    {id: "PANTONE 4675 C", L: 79.75, a: 8.84, b: 13.44},
+		    {id: "PANTONE 4665 C", L: 71.81, a: 11.82, b: 19.49},
+		    {id: "PANTONE 4655 C", L: 65.12, a: 14.54, b: 20.94},
+		    {id: "PANTONE 4645 C", L: 56.85, a: 17.09, b: 25.67},
+		    {id: "PANTONE 4635 C", L: 46.6, a: 19.58, b: 30.87},
+		    {id: "PANTONE 4625 C", L: 22.47, a: 15.37, b: 16.93},
+		    {id: "PANTONE 4260 C", L: 72.17, a: 13.79, b: 14.2},
+		    {id: "PANTONE 4261 C", L: 51.03, a: 17.93, b: 27.39},
+		    {id: "PANTONE 4262 C", L: 53.45, a: 20.39, b: 26.49},
+		    {id: "PANTONE 4263 C", L: 53.01, a: 23.18, b: 29.05},
+		    {id: "PANTONE 4264 C", L: 53.73, a: 24.49, b: 24.25},
+		    {id: "PANTONE 4265 C", L: 48.45, a: 23.07, b: 23.31},
+		    {id: "PANTONE 4266 C", L: 46.99, a: 22.68, b: 30.11},
+		    {id: "PANTONE 7513 C", L: 78.42, a: 14.75, b: 10.76},
+		    {id: "PANTONE 7514 C", L: 71.22, a: 17.46, b: 20.38},
+		    {id: "PANTONE 7515 C", L: 63.45, a: 20.62, b: 26.33},
+		    {id: "PANTONE 7516 C", L: 44.17, a: 26.96, b: 36.11},
+		    {id: "PANTONE 7517 C", L: 37.15, a: 27.68, b: 34.74},
+		    {id: "PANTONE 7518 C", L: 36.84, a: 12.87, b: 8.8},
+		    {id: "PANTONE 7519 C", L: 33.73, a: 7.03, b: 10.96},
+		    {id: "PANTONE 4755 C", L: 80.67, a: 7.4, b: 5.0},
+		    {id: "PANTONE 4745 C", L: 75.78, a: 9.21, b: 6.92},
+		    {id: "PANTONE 4735 C", L: 69.34, a: 10.93, b: 10.52},
+		    {id: "PANTONE 4725 C", L: 60.52, a: 14.24, b: 12.09},
+		    {id: "PANTONE 4715 C", L: 50.08, a: 16.82, b: 16.33},
+		    {id: "PANTONE 4705 C", L: 38.52, a: 20.67, b: 18.61},
+		    {id: "PANTONE 4695 C", L: 26.88, a: 18.37, b: 15.8},
+		    {id: "PANTONE 482 C", L: 82.01, a: 6.74, b: 7.92},
+		    {id: "PANTONE 481 C", L: 77.84, a: 8.77, b: 9.05},
+		    {id: "PANTONE 480 C", L: 71.84, a: 10.75, b: 13.23},
+		    {id: "PANTONE 479 C", L: 57.52, a: 16.74, b: 18.46},
+		    {id: "PANTONE 478 C", L: 32.76, a: 23.35, b: 21.85},
+		    {id: "PANTONE 477 C", L: 29.53, a: 18.04, b: 17.76},
+		    {id: "PANTONE 476 C", L: 25.76, a: 10.89, b: 12.21},
+		    {id: "PANTONE 4267 C", L: 73.77, a: 5.12, b: 6.21},
+		    {id: "PANTONE 4268 C", L: 67.43, a: 6.56, b: 8.86},
+		    {id: "PANTONE 4269 C", L: 62.49, a: 8.07, b: 14.44},
+		    {id: "PANTONE 4270 C", L: 57.07, a: 4.44, b: 11.62},
+		    {id: "PANTONE 4271 C", L: 53.17, a: 6.63, b: 8.57},
+		    {id: "PANTONE 4272 C", L: 46.6, a: 8.77, b: 7.25},
+		    {id: "PANTONE 4273 C", L: 30.3, a: 5.37, b: 0.39},
+		    {id: "PANTONE 7527 C", L: 84.43, a: 0.92, b: 3.3},
+		    {id: "PANTONE 7528 C", L: 76.15, a: 3.56, b: 4.77},
+		    {id: "PANTONE 7529 C", L: 70.2, a: 4.12, b: 6.36},
+		    {id: "PANTONE 7530 C", L: 62.37, a: 4.75, b: 8.42},
+		    {id: "PANTONE 7531 C", L: 45.5, a: 5.76, b: 11.76},
+		    {id: "PANTONE 7532 C", L: 35.79, a: 6.34, b: 13.19},
+		    {id: "PANTONE 7533 C", L: 24.72, a: 5.77, b: 11.33},
+		    {id: "PANTONE 7534 C", L: 82.12, a: 0.9, b: 4.18},
+		    {id: "PANTONE 7535 C", L: 71.93, a: 0.83, b: 8.0},
+		    {id: "PANTONE 7536 C", L: 65.78, a: 0.81, b: 10.18},
+		    {id: "PANTONE 7537 C", L: 69.88, a: -2.51, b: 1.93},
+		    {id: "PANTONE 7538 C", L: 62.93, a: -3.13, b: 1.84},
+		    {id: "PANTONE 7539 C", L: 59.24, a: -0.74, b: 1.05},
+		    {id: "PANTONE 7540 C", L: 33.37, a: -0.27, b: -4.94},
+		    {id: "PANTONE 427 C", L: 84.54, a: 0.28, b: -5.73},
+		    {id: "PANTONE 428 C", L: 79.49, a: -0.15, b: -6.42},
+		    {id: "PANTONE 429 C", L: 69.02, a: -0.92, b: -6.07},
+		    {id: "PANTONE 430 C", L: 55.51, a: -1.84, b: -7.76},
+		    {id: "PANTONE 431 C", L: 42.43, a: -2.16, b: -9.17},
+		    {id: "PANTONE 432 C", L: 25.7, a: -2.25, b: -9.09},
+		    {id: "PANTONE 433 C", L: 14.31, a: -1.48, b: -7.02},
+		    {id: "PANTONE 4274 C", L: 73.99, a: 0.02, b: -6.37},
+		    {id: "PANTONE 4275 C", L: 70.96, a: -0.13, b: -2.61},
+		    {id: "PANTONE 4276 C", L: 64.54, a: 2.19, b: -4.43},
+		    {id: "PANTONE 4277 C", L: 58.49, a: 4.04, b: -5.59},
+		    {id: "PANTONE 4278 C", L: 52.93, a: 1.79, b: -5.13},
+		    {id: "PANTONE 4279 C", L: 36.16, a: 4.5, b: -3.37},
+		    {id: "PANTONE 4280 C", L: 16.92, a: 0.42, b: -9.13},
+		    {id: "PANTONE 420 C", L: 80.83, a: 0.68, b: -3.77},
+		    {id: "PANTONE 421 C", L: 73.02, a: 0.0, b: -2.4},
+		    {id: "PANTONE 422 C", L: 66.16, a: 0.07, b: -4.02},
+		    {id: "PANTONE 423 C", L: 58.13, a: -0.15, b: -3.98},
+		    {id: "PANTONE 424 C", L: 47.93, a: 0.06, b: -2.65},
+		    {id: "PANTONE 425 C", L: 36.91, a: -0.44, b: -3.69},
+		    {id: "PANTONE 426 C", L: 15.61, a: -0.53, b: -3.06},
+		    {id: "PANTONE 441 C", L: 79.14, a: -2.82, b: -3.43},
+		    {id: "PANTONE 442 C", L: 69.84, a: -3.87, b: -3.69},
+		    {id: "PANTONE 443 C", L: 63.8, a: -4.42, b: -4.71},
+		    {id: "PANTONE 444 C", L: 51.2, a: -4.73, b: -4.48},
+		    {id: "PANTONE 445 C", L: 36.16, a: -3.88, b: -3.36},
+		    {id: "PANTONE 446 C", L: 28.6, a: -3.5, b: -1.3},
+		    {id: "PANTONE 447 C", L: 23.31, a: -2.19, b: 0.84},
+		    {id: "PANTONE 413 C", L: 75.44, a: -0.7, b: 1.8},
+		    {id: "PANTONE 414 C", L: 68.96, a: -0.84, b: 2.63},
+		    {id: "PANTONE 415 C", L: 60.66, a: -1.57, b: 2.95},
+		    {id: "PANTONE 416 C", L: 52.84, a: -1.39, b: 3.68},
+		    {id: "PANTONE 417 C", L: 42.87, a: -1.75, b: 3.95},
+		    {id: "PANTONE 418 C", L: 34.82, a: -1.87, b: 3.77},
+		    {id: "PANTONE 419 C", L: 13.32, a: -1.07, b: 0.37},
+		    {id: "PANTONE 4281 C", L: 72.55, a: 1.77, b: -3.96},
+		    {id: "PANTONE 4282 C", L: 70.29, a: 3.6, b: -3.53},
+		    {id: "PANTONE 4283 C", L: 67.22, a: 4.65, b: -2.23},
+		    {id: "PANTONE 4284 C", L: 46.19, a: 5.48, b: -6.23},
+		    {id: "PANTONE 4285 C", L: 42.41, a: 5.46, b: -7.01},
+		    {id: "PANTONE 4286 C", L: 37.38, a: 6.48, b: -4.94},
+		    {id: "PANTONE 4287 C", L: 28.1, a: 2.21, b: -0.87},
+		    {id: "PANTONE 2330 C", L: 82.66, a: 1.45, b: -2.11},
+		    {id: "PANTONE 2331 C", L: 68.97, a: 2.74, b: -1.1},
+		    {id: "PANTONE 2332 C", L: 57.22, a: 1.5, b: -0.1},
+		    {id: "PANTONE 2333 C", L: 46.34, a: 1.49, b: 0.68},
+		    {id: "PANTONE 2334 C", L: 43.12, a: 3.53, b: 0.15},
+		    {id: "PANTONE 2335 C", L: 34.56, a: 5.38, b: 5.75},
+		    {id: "PANTONE 2336 C", L: 32.04, a: 1.36, b: 1.13},
+		    {id: "PANTONE 400 C", L: 77.75, a: 1.75, b: 1.97},
+		    {id: "PANTONE 401 C", L: 69.49, a: 1.95, b: 2.97},
+		    {id: "PANTONE 402 C", L: 62.54, a: 2.17, b: 3.45},
+		    {id: "PANTONE 403 C", L: 55.83, a: 2.35, b: 3.98},
+		    {id: "PANTONE 404 C", L: 47.47, a: 2.77, b: 4.64},
+		    {id: "PANTONE 405 C", L: 41.94, a: 2.7, b: 4.58},
+		    {id: "PANTONE Black C", L: 17.27, a: 1.35, b: 2.03},
+		    {id: "PANTONE 4288 C", L: 75.87, a: -1.05, b: -0.81},
+		    {id: "PANTONE 4289 C", L: 63.32, a: 1.95, b: -3.36},
+		    {id: "PANTONE 4290 C", L: 58.65, a: 4.36, b: -1.75},
+		    {id: "PANTONE 4291 C", L: 47.12, a: 4.12, b: -1.88},
+		    {id: "PANTONE 4292 C", L: 46.6, a: 3.81, b: -2.81},
+		    {id: "PANTONE 4293 C", L: 39.95, a: 6.22, b: -5.78},
+		    {id: "PANTONE 4294 C", L: 35.6, a: 4.59, b: -4.24},
+		    {id: "PANTONE 406 C", L: 76.77, a: 3.36, b: 0.3},
+		    {id: "PANTONE 407 C", L: 69.44, a: 4.16, b: 1.47},
+		    {id: "PANTONE 408 C", L: 59.17, a: 5.04, b: 1.21},
+		    {id: "PANTONE 409 C", L: 51.55, a: 5.31, b: 2.4},
+		    {id: "PANTONE 410 C", L: 44.7, a: 5.88, b: 2.83},
+		    {id: "PANTONE 411 C", L: 36.15, a: 6.01, b: 2.77},
+		    {id: "PANTONE 412 C", L: 20.81, a: 4.34, b: 2.07},
+		    {id: "PANTONE 434 C", L: 80.27, a: 4.99, b: -2.38},
+		    {id: "PANTONE 435 C", L: 74.23, a: 6.26, b: -3.45},
+		    {id: "PANTONE 436 C", L: 64.91, a: 7.59, b: -2.85},
+		    {id: "PANTONE 437 C", L: 44.9, a: 8.98, b: -0.72},
+		    {id: "PANTONE 438 C", L: 31.51, a: 8.07, b: 1.3},
+		    {id: "PANTONE 439 C", L: 24.35, a: 6.34, b: 2.03},
+		    {id: "PANTONE 440 C", L: 20.02, a: 4.25, b: 2.13},
+		    {id: "PANTONE 2473 C", L: 75.97, a: 6.45, b: -3.83},
+		    {id: "PANTONE 2474 C", L: 67.66, a: 5.74, b: 4.33},
+		    {id: "PANTONE 2475 C", L: 58.66, a: 10.81, b: 5.59},
+		    {id: "PANTONE 2476 C", L: 47.69, a: 10.5, b: 2.62},
+		    {id: "PANTONE 2477 C", L: 39.94, a: 10.46, b: 5.22},
+		    {id: "PANTONE 2478 C", L: 25.08, a: 11.63, b: 0.38},
+		    {id: "PANTONE 2479 C", L: 22.95, a: 4.5, b: 4.3},
+		    {id: "PANTONE Warm Gray 1 C", L: 84.67, a: 2.05, b: 0.46},
+		    {id: "PANTONE Warm Gray 2 C", L: 79.79, a: 2.37, b: 1.59},
+		    {id: "PANTONE Warm Gray 3 C", L: 75.13, a: 2.68, b: 2.18},
+		    {id: "PANTONE Warm Gray 4 C", L: 71.55, a: 2.9, b: 2.59},
+		    {id: "PANTONE Warm Gray 5 C", L: 67.65, a: 3.15, b: 2.96},
+		    {id: "PANTONE Warm Gray 6 C", L: 65.05, a: 3.34, b: 2.85},
+		    {id: "PANTONE Warm Gray 7 C", L: 58.96, a: 3.65, b: 3.59},
+		    {id: "PANTONE Warm Gray 8 C", L: 55.13, a: 3.85, b: 3.94},
+		    {id: "PANTONE Warm Gray 9 C", L: 51.2, a: 4.1, b: 4.21},
+		    {id: "PANTONE Warm Gray 10 C", L: 47.41, a: 4.29, b: 4.57},
+		    {id: "PANTONE Warm Gray 11 C", L: 42.8, a: 4.48, b: 5.08},
+		    {id: "PANTONE Cool Gray 1 C", L: 86.84, a: 0.92, b: -3.04},
+		    {id: "PANTONE Cool Gray 2 C", L: 83.76, a: 0.85, b: -3.0},
+		    {id: "PANTONE Cool Gray 3 C", L: 80.94, a: 0.8, b: -3.33},
+		    {id: "PANTONE Cool Gray 4 C", L: 76.21, a: 0.73, b: -3.56},
+		    {id: "PANTONE Cool Gray 5 C", L: 72.87, a: 0.69, b: -3.65},
+		    {id: "PANTONE Cool Gray 6 C", L: 68.83, a: 0.69, b: -4.21},
+		    {id: "PANTONE Cool Gray 7 C", L: 63.19, a: 0.6, b: -4.3},
+		    {id: "PANTONE Cool Gray 8 C", L: 57.59, a: 0.53, b: -4.43},
+		    {id: "PANTONE Cool Gray 9 C", L: 50.01, a: 0.41, b: -4.55},
+		    {id: "PANTONE Cool Gray 10 C", L: 43.07, a: 0.29, b: -4.63},
+		    {id: "PANTONE Cool Gray 11 C", L: 36.86, a: 0.17, b: -4.66},
+		    {id: "PANTONE Black 2 C", L: 19.12, a: 0.31, b: 9.56},
+		    {id: "PANTONE Black 3 C", L: 14.42, a: -4.01, b: 2.24},
+		    {id: "PANTONE Black 4 C", L: 16.13, a: 4.12, b: 7.69},
+		    {id: "PANTONE Black 5 C", L: 20.08, a: 10.31, b: 0.74},
+		    {id: "PANTONE Black 6 C", L: 8.02, a: -1.61, b: -7.4},
+		    {id: "PANTONE Black 7 C", L: 24.13, a: 1.34, b: 2.55},
+		];
+
+        // DOM元素
+        const pantoneInput = document.getElementById('pantoneInput');
+        const searchPantoneBtn = document.getElementById('searchPantoneBtn');
+        const clearPantoneBtn = document.getElementById('clearPantoneBtn');
+        const pantoneColorDisplay = document.getElementById('pantoneColorDisplay');
+        const pantoneColorInfo = document.getElementById('pantoneColorInfo');
+        const similarColorsSection = document.getElementById('similarColorsSection');
+        const similarColorsGridRow1 = document.getElementById('similarColorsGridRow1');
+        const similarColorsGridRow2 = document.getElementById('similarColorsGridRow2');
+        
+        const labLInput = document.getElementById('labL');
+        const labLSlider = document.getElementById('labLSlider');
+        const labAInput = document.getElementById('labA');
+        const labASlider = document.getElementById('labASlider');
+        const labBInput = document.getElementById('labB');
+        const labBSlider = document.getElementById('labBSlider');
+        const searchLabBtn = document.getElementById('searchLabBtn');
+        const clearLabBtn = document.getElementById('clearLabBtn');
+        const labColorDisplay = document.getElementById('labColorDisplay');
+        
+        const resultsTable = document.getElementById('resultsTable');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const quickButtons = document.querySelectorAll('.quick-btn');
+        
+        // 当前选中的相似颜色
+        let currentSelectedColor = null;
+        
+        // Lab转RGB函数
+        function labToRgb(L, a, b) {
+            const y = (L + 16) / 116;
+            const x = a / 500 + y;
+            const z = y - b / 200;
+            
+            const delta = 6/29;
+            const x3 = (x > delta) ? Math.pow(x, 3) : (x - 16/116) * 3 * delta * delta;
+            const y3 = (L > 8) ? Math.pow((L + 16) / 116, 3) : L / (3 * delta * delta);
+            const z3 = (z > delta) ? Math.pow(z, 3) : (z - 16/116) * 3 * delta * delta;
+            
+            const D50_X = 96.422;
+            const D50_Y = 100.000;
+            const D50_Z = 82.521;
+            
+            const X = x3 * (D50_X / 100);
+            const Y = y3 * (D50_Y / 100);
+            const Z = z3 * (D50_Z / 100);
+            
+            let r = X * 3.1338561 + Y * -1.6168667 + Z * -0.4906146;
+            let g = X * -0.9787684 + Y * 1.9161415 + Z * 0.0334540;
+            let bVal = X * 0.0719453 + Y * -0.2289914 + Z * 1.4052427;
+            
+            const gammaCorrect = (val) => {
+                if (val <= 0.0031308) {
+                    return 12.92 * val;
+                } else {
+                    return 1.055 * Math.pow(val, 1/2.4) - 0.055;
+                }
+            };
+            
+            r = gammaCorrect(r);
+            g = gammaCorrect(g);
+            bVal = gammaCorrect(bVal);
+            
+            r = Math.max(0, Math.min(1, r));
+            g = Math.max(0, Math.min(1, g));
+            bVal = Math.max(0, Math.min(1, bVal));
+            
+            return [
+                Math.round(r * 255),
+                Math.round(g * 255),
+                Math.round(bVal * 255)
+            ];
+        }
+        
+        // 计算∆E00
+        function calculateDeltaE00(L1, a1, b1, L2, a2, b2) {
+            const C1 = Math.sqrt(a1 * a1 + b1 * b1);
+            const C2 = Math.sqrt(a2 * a2 + b2 * b2);
+            
+            const C_bar = (C1 + C2) / 2;
+            
+            const G = 0.5 * (1 - Math.sqrt(Math.pow(C_bar, 7) / (Math.pow(C_bar, 7) + Math.pow(25, 7))));
+            
+            const a1_prime = a1 * (1 + G);
+            const a2_prime = a2 * (1 + G);
+            
+            const C1_prime = Math.sqrt(a1_prime * a1_prime + b1 * b1);
+            const C2_prime = Math.sqrt(a2_prime * a2_prime + b2 * b2);
+            const C_bar_prime = (C1_prime + C2_prime) / 2;
+            
+            const h1_prime = (Math.atan2(b1, a1_prime) * 180 / Math.PI + 360) % 360;
+            const h2_prime = (Math.atan2(b2, a2_prime) * 180 / Math.PI + 360) % 360;
+            
+            const deltaL_prime = L2 - L1;
+            const deltaC_prime = C2_prime - C1_prime;
+            
+            let delta_h_prime;
+            if (C1_prime * C2_prime === 0) {
+                delta_h_prime = 0;
+            } else {
+                const delta_h = h2_prime - h1_prime;
+                if (Math.abs(delta_h) <= 180) {
+                    delta_h_prime = delta_h;
+                } else if (delta_h > 180) {
+                    delta_h_prime = delta_h - 360;
+                } else {
+                    delta_h_prime = delta_h + 360;
+                }
+            }
+            
+            const deltaH_prime = 2 * Math.sqrt(C1_prime * C2_prime) * Math.sin(delta_h_prime * Math.PI / 360);
+            
+            const L_bar_prime = (L1 + L2) / 2;
+            let h_bar_prime;
+            if (C1_prime * C2_prime === 0) {
+                h_bar_prime = h1_prime + h2_prime;
+            } else {
+                if (Math.abs(h1_prime - h2_prime) <= 180) {
+                    h_bar_prime = (h1_prime + h2_prime) / 2;
+                } else if (h1_prime + h2_prime < 360) {
+                    h_bar_prime = (h1_prime + h2_prime + 360) / 2;
+                } else {
+                    h_bar_prime = (h1_prime + h2_prime - 360) / 2;
+                }
+            }
+            
+            const T = 1 - 0.17 * Math.cos((h_bar_prime - 30) * Math.PI / 180)
+                        + 0.24 * Math.cos(2 * h_bar_prime * Math.PI / 180)
+                        + 0.32 * Math.cos((3 * h_bar_prime + 6) * Math.PI / 180)
+                        - 0.2 * Math.cos((4 * h_bar_prime - 63) * Math.PI / 180);
+            
+            const delta_theta = 30 * Math.exp(-Math.pow((h_bar_prime - 275) / 25, 2));
+            
+            const R_C = 2 * Math.sqrt(Math.pow(C_bar_prime, 7) / (Math.pow(C_bar_prime, 7) + Math.pow(25, 7)));
+            
+            const S_L = 1 + (0.015 * Math.pow(L_bar_prime - 50, 2)) / Math.sqrt(20 + Math.pow(L_bar_prime - 50, 2));
+            const S_C = 1 + 0.045 * C_bar_prime;
+            const S_H = 1 + 0.015 * C_bar_prime * T;
+            
+            const R_T = -Math.sin(2 * delta_theta * Math.PI / 180) * R_C;
+            
+            const deltaE00 = Math.sqrt(
+                Math.pow(deltaL_prime / S_L, 2) +
+                Math.pow(deltaC_prime / S_C, 2) +
+                Math.pow(deltaH_prime / S_H, 2) +
+                R_T * (deltaC_prime / S_C) * (deltaH_prime / S_H)
+            );
+            
+            return deltaE00;
+        }
+        
+        // 查找Pantone颜色
+        function findPantoneColor(pantoneQuery) {
+            if (!pantoneQuery) return null;
+            
+            const query = pantoneQuery.toUpperCase().trim();
+            
+            const exactMatch = pantoneDatabase.find(color => 
+                color.id.toUpperCase() === query
+            );
+            
+            if (exactMatch) return exactMatch;
+            
+            const matchWithSuffix = pantoneDatabase.find(color => {
+                const colorId = color.id.toUpperCase();
+                const colorNum = colorId.replace('PANTONE ', '').trim();
+                return colorNum === query;
+            });
+            
+            if (matchWithSuffix) return matchWithSuffix;
+            
+            const queryNumMatch = query.match(/\d+/);
+            if (queryNumMatch) {
+                const queryNum = queryNumMatch[0];
+                const matches = pantoneDatabase.filter(color => {
+                    const colorId = color.id.toUpperCase();
+                    const colorNumMatch = colorId.match(/\d+/);
+                    if (!colorNumMatch) return false;
+                    return colorNumMatch[0] === queryNum;
+                });
+                
+                if (matches.length > 0) {
+                    const coatedMatch = matches.find(color => 
+                        color.id.toUpperCase().includes(' C')
+                    );
+                    return coatedMatch || matches[0];
+                }
+            }
+            
+            return pantoneDatabase.find(color => 
+                color.id.toUpperCase().includes(query)
+            ) || null;
+        }
+        
+        // 查找最接近的Pantone颜色
+        function findClosestPantoneColors(L, a, b, count = 5) {
+            const colorsWithDeltaE = pantoneDatabase.map(color => {
+                const deltaE = calculateDeltaE00(L, a, b, color.L, color.a, color.b);
+                return {
+                    ...color,
+                    deltaE: deltaE
+                };
+            });
+            
+            colorsWithDeltaE.sort((a, b) => a.deltaE - b.deltaE);
+            return colorsWithDeltaE.slice(0, count);
+        }
+        
+        // 更新颜色显示
+        function updateColorDisplay(displayElement, L, a, b, name = '') {
+            const rgb = labToRgb(L, a, b);
+            displayElement.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+            
+            const luminance = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+            displayElement.style.color = luminance > 128 ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)";
+            
+            if (name) {
+                displayElement.innerHTML = `<div class="color-name">${name}</div>`;
+            } else {
+                displayElement.innerHTML = `<div class="color-name">Lab(${L.toFixed(1)}, ${a.toFixed(1)}, ${b.toFixed(1)})</div>`;
+            }
+        }
+        
+        // 获取∆E2000的CSS类
+        function getDeltaEClass(deltaE) {
+            if (deltaE <= 2.0) return 'delta-e-low';
+            if (deltaE <= 5.0) return 'delta-e-medium';
+            return 'delta-e-high';
+        }
+        
+        // 显示匹配结果
+        function displayMatchingResults(closestColors) {
+            resultsTableBody.innerHTML = '';
+            
+            if (!closestColors || closestColors.length === 0) {
+                noResultsMessage.style.display = 'block';
+                resultsTable.style.display = 'none';
+                return;
+            }
+            
+            noResultsMessage.style.display = 'none';
+            resultsTable.style.display = 'table';
+            
+            closestColors.forEach((color, index) => {
+                const row = document.createElement('tr');
+                
+                const rankCell = document.createElement('td');
+                rankCell.textContent = index + 1;
+                row.appendChild(rankCell);
+                
+                const colorCell = document.createElement('td');
+                const colorSample = document.createElement('div');
+                colorSample.className = 'color-sample';
+                const rgb = labToRgb(color.L, color.a, color.b);
+                colorSample.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+                colorCell.appendChild(colorSample);
+                row.appendChild(colorCell);
+                
+                const pantoneCell = document.createElement('td');
+                pantoneCell.textContent = color.id;
+                row.appendChild(pantoneCell);
+                
+                const labCell = document.createElement('td');
+                labCell.textContent = `${color.L.toFixed(2)}, ${color.a.toFixed(2)}, ${color.b.toFixed(2)}`;
+                row.appendChild(labCell);
+                
+                const deltaECell = document.createElement('td');
+                const deltaESpan = document.createElement('span');
+                deltaESpan.className = `delta-e ${getDeltaEClass(color.deltaE)}`;
+                deltaESpan.textContent = color.deltaE.toFixed(2);
+                deltaECell.appendChild(deltaESpan);
+                row.appendChild(deltaECell);
+                
+                // 添加点击事件：点击匹配结果中的颜色，联动更新Lab值输入框
+                row.addEventListener('click', () => {
+                    // 更新Lab值输入框和滑块
+                    labLInput.value = color.L;
+                    labLSlider.value = color.L;
+                    labAInput.value = color.a;
+                    labASlider.value = color.a;
+                    labBInput.value = color.b;
+                    labBSlider.value = color.b;
+                    
+                    // 更新Lab值颜色显示
+                    updateColorDisplay(labColorDisplay, color.L, color.a, color.b);
+                    
+                    // 更新相似颜色区域
+                    const similarColors = findSimilarPantoneNames(color.id, 10);
+                    displaySimilarColors(similarColors, color.id);
+                    
+                    // 更新Pantone输入框
+                    pantoneInput.value = color.id;
+                    
+                    // 更新Pantone颜色显示
+                    updateColorDisplay(pantoneColorDisplay, color.L, color.a, color.b, color.id);
+                    pantoneColorInfo.textContent = `${color.id}: Lab值(${color.L.toFixed(1)}, ${color.a.toFixed(1)}, ${color.b.toFixed(1)})`;
+                });
+                
+                resultsTableBody.appendChild(row);
+            });
+        }
+        
+        // 新功能：查找名称相似的Pantone颜色（包括自身）
+        function findSimilarPantoneNames(pantoneId, count = 10) {
+            if (!pantoneId) return [];
+            
+            const idNumMatch = pantoneId.match(/\d+/);
+            if (!idNumMatch) return [findPantoneColor(pantoneId)].filter(Boolean);
+            
+            const idNum = parseInt(idNumMatch[0]);
+            
+            const colorsWithDiff = pantoneDatabase.map(color => {
+                const colorNumMatch = color.id.match(/\d+/);
+                if (!colorNumMatch) return { ...color, diff: Infinity };
+                
+                const colorNum = parseInt(colorNumMatch[0]);
+                const diff = Math.abs(colorNum - idNum);
+                
+                return { ...color, diff };
+            });
+            
+            colorsWithDiff.sort((a, b) => a.diff - b.diff);
+            
+            return colorsWithDiff.slice(0, count);
+        }
+        
+        // 显示相似颜色（10个，分两排）
+        function displaySimilarColors(similarColors, selectedColorId = null) {
+            similarColorsGridRow1.innerHTML = '';
+            similarColorsGridRow2.innerHTML = '';
+            
+            if (!similarColors || similarColors.length === 0) {
+                similarColorsSection.style.display = 'none';
+                return;
+            }
+            
+            similarColorsSection.style.display = 'block';
+            
+            // 显示10个相似颜色，分两排
+            similarColors.forEach((color, index) => {
+                const colorItem = document.createElement('div');
+                colorItem.className = 'similar-color-item';
+                
+                // 如果是选中的颜色，添加选中样式
+                if (color.id === selectedColorId) {
+                    colorItem.classList.add('selected-color');
+                    currentSelectedColor = color.id;
+                }
+                
+                const colorSample = document.createElement('div');
+                colorSample.className = 'similar-color-sample';
+                const rgb = labToRgb(color.L, color.a, color.b);
+                colorSample.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+                
+                const colorName = document.createElement('div');
+                colorName.className = 'similar-color-name';
+                colorName.textContent = color.id.replace('PANTONE ', '');
+                
+                colorItem.appendChild(colorSample);
+                colorItem.appendChild(colorName);
+                
+                // 添加点击事件
+                colorItem.addEventListener('click', () => {
+                    // 移除之前选中的样式
+                    document.querySelectorAll('.similar-color-item').forEach(item => {
+                        item.classList.remove('selected-color');
+                    });
+                    
+                    // 添加当前选中的样式
+                    colorItem.classList.add('selected-color');
+                    currentSelectedColor = color.id;
+                    
+                    // 更新输入框
+                    pantoneInput.value = color.id;
+                    
+                    // 更新颜色显示
+                    updateColorDisplay(pantoneColorDisplay, color.L, color.a, color.b, color.id);
+                    
+                    // 更新Lab值标注
+                    pantoneColorInfo.textContent = `${color.id}: Lab值(${color.L.toFixed(1)}, ${color.a.toFixed(1)}, ${color.b.toFixed(1)})`;
+                    
+                    // 联动更新Lab值输入框
+                    labLInput.value = color.L;
+                    labLSlider.value = color.L;
+                    labAInput.value = color.a;
+                    labASlider.value = color.a;
+                    labBInput.value = color.b;
+                    labBSlider.value = color.b;
+                    
+                    // 更新Lab值颜色显示
+                    updateColorDisplay(labColorDisplay, color.L, color.a, color.b);
+                });
+                
+                // 分两排显示：前5个在第一排，后5个在第二排
+                if (index < 5) {
+                    similarColorsGridRow1.appendChild(colorItem);
+                } else {
+                    similarColorsGridRow2.appendChild(colorItem);
+                }
+            });
+        }
+        
+        // 事件监听器
+        searchPantoneBtn.addEventListener('click', () => {
+            const pantoneQuery = pantoneInput.value.trim();
+            
+            if (!pantoneQuery) {
+                alert('请输入Pantone号');
+                return;
+            }
+            
+            const color = findPantoneColor(pantoneQuery);
+            
+            if (color) {
+                updateColorDisplay(pantoneColorDisplay, color.L, color.a, color.b, color.id);
+                pantoneColorInfo.textContent = `${color.id}: Lab值(${color.L.toFixed(1)}, ${color.a.toFixed(1)}, ${color.b.toFixed(1)})`;
+                
+                // 查找并显示10个相似颜色（包括自身）
+                const similarColors = findSimilarPantoneNames(color.id, 10);
+                displaySimilarColors(similarColors, color.id);
+                
+                // 联动更新Lab值输入框
+                labLInput.value = color.L;
+                labLSlider.value = color.L;
+                labAInput.value = color.a;
+                labASlider.value = color.a;
+                labBInput.value = color.b;
+                labBSlider.value = color.b;
+                
+                // 更新Lab值颜色显示
+                updateColorDisplay(labColorDisplay, color.L, color.a, color.b);
+            } else {
+                pantoneColorDisplay.style.backgroundColor = '#f0f0f0';
+                pantoneColorDisplay.innerHTML = '<div class="color-name">未找到颜色</div>';
+                pantoneColorInfo.textContent = '未找到匹配的Pantone颜色';
+                similarColorsSection.style.display = 'none';
+            }
+        });
+        
+        clearPantoneBtn.addEventListener('click', () => {
+            pantoneInput.value = '';
+            pantoneColorDisplay.style.backgroundColor = '#f0f0f0';
+            pantoneColorDisplay.innerHTML = '';
+            pantoneColorInfo.textContent = '未查询';
+            similarColorsSection.style.display = 'none';
+        });
+        
+        searchLabBtn.addEventListener('click', () => {
+            const L = parseFloat(labLInput.value);
+            const a = parseFloat(labAInput.value);
+            const b = parseFloat(labBInput.value);
+            
+            if (isNaN(L) || isNaN(a) || isNaN(b)) {
+                alert('请输入有效的Lab值');
+                return;
+            }
+            
+            updateColorDisplay(labColorDisplay, L, a, b);
+            const closestColors = findClosestPantoneColors(L, a, b, 5);
+            displayMatchingResults(closestColors);
+            
+            // 如果有匹配结果，显示第一个匹配颜色的相似颜色
+            if (closestColors && closestColors.length > 0) {
+                const topMatch = closestColors[0];
+                const similarColors = findSimilarPantoneNames(topMatch.id, 10);
+                displaySimilarColors(similarColors, topMatch.id);
+                
+                // 更新Pantone输入框
+                pantoneInput.value = topMatch.id;
+                
+                // 更新Pantone颜色显示
+                updateColorDisplay(pantoneColorDisplay, topMatch.L, topMatch.a, topMatch.b, topMatch.id);
+                pantoneColorInfo.textContent = `${topMatch.id}: Lab值(${topMatch.L.toFixed(1)}, ${topMatch.a.toFixed(1)}, ${topMatch.b.toFixed(1)})`;
+            } else {
+                similarColorsSection.style.display = 'none';
+            }
+        });
+        
+        clearLabBtn.addEventListener('click', () => {
+            labLInput.value = '50.0';
+            labLSlider.value = '50.0';
+            labAInput.value = '0.0';
+            labASlider.value = '0.0';
+            labBInput.value = '0.0';
+            labBSlider.value = '0.0';
+            labColorDisplay.style.backgroundColor = '#f0f0f0';
+            labColorDisplay.innerHTML = '';
+            
+            noResultsMessage.style.display = 'block';
+            resultsTable.style.display = 'none';
+            similarColorsSection.style.display = 'none';
+        });
+        
+        // 滑块和输入框同步
+        labLSlider.addEventListener('input', () => {
+            labLInput.value = labLSlider.value;
+        });
+        
+        labLInput.addEventListener('input', () => {
+            labLSlider.value = labLInput.value;
+        });
+        
+        labASlider.addEventListener('input', () => {
+            labAInput.value = labASlider.value;
+        });
+        
+        labAInput.addEventListener('input', () => {
+            labASlider.value = labAInput.value;
+        });
+        
+        labBSlider.addEventListener('input', () => {
+            labBInput.value = labBSlider.value;
+        });
+        
+        labBInput.addEventListener('input', () => {
+            labBSlider.value = labBInput.value;
+        });
+        
+        // 快速按钮
+        quickButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const labValues = button.dataset.lab.split(',');
+                labLInput.value = labValues[0];
+                labLSlider.value = labValues[0];
+                labAInput.value = labValues[1];
+                labASlider.value = labValues[1];
+                labBInput.value = labValues[2];
+                labBSlider.value = labValues[2];
+                
+                searchLabBtn.click();
+            });
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log(`已加载 ${pantoneDatabase.length} 个Pantone颜色`);
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && document.activeElement === pantoneInput) {
+                    searchPantoneBtn.click();
+                }
+                
+                if (e.key === 'Enter' && (document.activeElement === labLInput || 
+                     document.activeElement === labAInput || 
+                     document.activeElement === labBInput)) {
+                    searchLabBtn.click();
+                }
+            });
+            
+            // 设置默认值用于演示
+            pantoneInput.value = '100 C';
+        });
+    </script>
+</body>
+</html>
