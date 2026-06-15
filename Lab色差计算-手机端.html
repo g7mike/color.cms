@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab颜色差异计算器_色彩标准化_By Mike</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #2c3e50;
+            --accent-color: #FFD700;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --text-light: #666;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 12px;
+            min-height: 100vh;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        h1 i {
+            color: var(--accent-color);
+        }
+        
+        .subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px 16px;
+            gap: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .color-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .color-box {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .color-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .color-label span:last-child {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        .input-with-slider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .input-with-slider input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .input-with-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .input-with-slider input[type="number"] {
+            width: 70px;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .color-preview-area {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .color-display {
+            width: 100%;
+            height: 120px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .color-name {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .lab-values {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        
+        .white-point-info {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            border-left: 3px solid var(--secondary-color);
+        }
+        
+        .difference-area {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-item {
+            margin-bottom: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 4px;
+        }
+        
+        .interpretation {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            padding: 8px 10px;
+            background-color: #f0f7ff;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .algorithm-selection {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .algorithm-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .algorithm-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .algorithm-option {
+            width: 100%;
+        }
+        
+        .algorithm-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .algorithm-option input[type="radio"] {
+            display: none;
+        }
+        
+        .algorithm-option input[type="radio"]:checked + label {
+            border-color: var(--primary-color);
+            background-color: rgba(74, 111, 165, 0.08);
+        }
+        
+        .algorithm-option label:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .algorithm-desc {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+            padding-left: 34px;
+        }
+        
+        .parameter-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .parameter-group {
+            width: 100%;
+        }
+        
+        .parameter-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        .parameter-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .parameter-values {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .parameter-value {
+            padding: 6px 10px;
+            background-color: #f0f7ff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--primary-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        button {
+            padding: 16px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .reset-btn {
+            background-color: #f1f1f1;
+            color: var(--text-color);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(74, 111, 165, 0.3);
+        }
+        
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-section {
+            background-color: #f0f7ff;
+            padding: 18px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .info-section h3 {
+            color: var(--secondary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .info-section p {
+            margin-bottom: 12px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .delta-e-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            font-size: 0.85rem;
+        }
+        
+        .delta-e-table th, .delta-e-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .delta-e-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .delta-e-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .delta-e-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .color-box:nth-child(1) {
+            background-color: #f0f7ff;
+            border-top: 3px solid var(--primary-color);
+        }
+        
+        .color-box:nth-child(2) {
+            background-color: #fff0f5;
+            border-top: 3px solid #c44569;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+        
+        /* 大屏幕适配 */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            
+            .container {
+                max-width: 800px;
+            }
+            
+            .color-inputs {
+                flex-direction: row;
+            }
+            
+            .color-preview-area {
+                flex-direction: row;
+            }
+            
+            .color-display {
+                height: 140px;
+            }
+            
+            .lab-values {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .action-buttons {
+                flex-direction: row;
+            }
+            
+            .algorithm-options {
+                flex-direction: row;
+            }
+            
+            .parameter-inputs {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-palette"></i> Lab颜色差异计算器_色彩标准化</h1>
+            <p class="subtitle">输入两个Lab颜色值，实时预览颜色并计算∆Eab和∆E2000色差。</p>
+        </header>
+        
+        <div class="content">
+            <!-- 颜色输入部分 -->
+            <div>
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> 输入Lab颜色值</h2>
+                
+                <div class="color-inputs">
+                    <div class="color-box">
+                        <div class="color-label">
+                            <span>颜色 1</span>
+                            <span>Lab(50, 0, 0)</span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="l1">L (明度: 0-100)</label>
+                            <div class="input-with-slider">
+                                <input type="range" id="l1-slider" min="0" max="100" step="1" value="50">
+                                <input type="number" id="l1" min="0" max="100" step="0.5" value="50">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="a1">a (红-绿轴: -128 到 127)</label>
+                            <div class="input-with-slider">
+                                <input type="range" id="a1-slider" min="-128" max="127" step="1" value="0">
+                                <input type="number" id="a1" min="-128" max="127" step="0.5" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="b1">b (黄-蓝轴: -128 到 127)</label>
+                            <div class="input-with-slider">
+                                <input type="range" id="b1-slider" min="-128" max="127" step="1" value="0">
+                                <input type="number" id="b1" min="-128" max="127" step="0.5" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="color-box">
+                        <div class="color-label">
+                            <span>颜色 2</span>
+                            <span>Lab(50, 0, 0)</span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="l2">L (明度: 0-100)</label>
+                            <div class="input-with-slider">
+                                <input type="range" id="l2-slider" min="0" max="100" step="1" value="50">
+                                <input type="number" id="l2" min="0" max="100" step="0.5" value="50">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="a2">a (红-绿轴: -128 到 127)</label>
+                            <div class="input-with-slider">
+                                <input type="range" id="a2-slider" min="-128" max="127" step="1" value="0">
+                                <input type="number" id="a2" min="-128" max="127" step="0.5" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="b2">b (黄-蓝轴: -128 到 127)</label>
+                            <div class="input-with-slider">
+                                <input type="range" id="b2-slider" min="-128" max="127" step="1" value="0">
+                                <input type="number" id="b2" min="-128" max="127" step="0.5" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 算法参数部分 -->
+            <div class="algorithm-selection">
+                <div class="algorithm-title">
+                    <i class="fas fa-cogs"></i> ∆E2000 算法参数
+                </div>
+                
+                <div class="algorithm-options">
+                    <div class="algorithm-option">
+                        <input type="radio" id="algorithm1" name="algorithm" value="1:1:1" checked>
+                        <label for="algorithm1">
+                            <i class="fas fa-balance-scale"></i>
+                            <div>
+                                <div><strong>标准权重</strong></div>
+                                <div class="algorithm-desc">kL=1, kC=1, kH=1</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="algorithm-option">
+                        <input type="radio" id="algorithm2" name="algorithm" value="2:1:1">
+                        <label for="algorithm2">
+                            <i class="fas fa-adjust"></i>
+                            <div>
+                                <div><strong>增强明度权重</strong></div>
+                                <div class="algorithm-desc">kL=2, kC=1, kH=1</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="algorithm-option">
+                        <input type="radio" id="algorithm3" name="algorithm" value="custom">
+                        <label for="algorithm3">
+                            <i class="fas fa-edit"></i>
+                            <div>
+                                <div><strong>自定义权重</strong></div>
+                                <div class="algorithm-desc">手动设置参数</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="custom-params" style="display: none; margin-top: 16px;">
+                    <div class="parameter-inputs">
+                        <div class="parameter-group">
+                            <label for="kL">明度权重 kL</label>
+                            <input type="number" id="kL" min="0.5" max="5" step="0.5" value="1">
+                        </div>
+                        <div class="parameter-group">
+                            <label for="kC">色度权重 kC</label>
+                            <input type="number" id="kC" min="0.5" max="5" step="0.5" value="1">
+                        </div>
+                        <div class="parameter-group">
+                            <label for="kH">色调权重 kH</label>
+                            <input type="number" id="kH" min="0.5" max="5" step="0.5" value="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="parameter-values" id="current-params">
+                    <div class="parameter-value">当前参数: kL=1, kC=1, kH=1</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="calculate-btn" id="calculateBtn">
+                        <i class="fas fa-calculator"></i> 计算色差
+                    </button>
+                    <button class="reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 颜色预览和结果部分 -->
+            <div>
+                <h2 class="section-title"><i class="fas fa-eye-dropper"></i> 颜色预览与色差结果</h2>
+                
+                <div class="color-preview-area">
+                    <div class="color-display" id="colorDisplay1">
+                        <div class="color-name">颜色 1</div>
+                    </div>
+                    <div class="color-display" id="colorDisplay2">
+                        <div class="color-name">颜色 2</div>
+                    </div>
+                </div>
+                
+                <div class="lab-values">
+                    <div>颜色 1: <span id="labValues1">Lab(50.0, 0.0, 0.0)</span></div>
+                    <div>颜色 2: <span id="labValues2">Lab(50.0, 0.0, 0.0)</span></div>
+                </div>
+                
+                <div class="white-point-info">
+                    <i class="fas fa-info-circle"></i> 使用D50参考白点 (X=96.422, Y=100.000, Z=82.521)
+                </div>
+                
+                <div class="difference-area">
+                    <div class="result-item">
+                        <div class="result-title">
+                            <i class="fas fa-ruler-combined"></i> ∆Eab (CIE76) 色差
+                        </div>
+                        <div class="result-value" id="deltaEab">0.00</div>
+                        <div class="interpretation" id="interpretationEab">
+                            <strong>无法察觉的差异</strong> - 人眼无法察觉颜色差异。
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-title">
+                            <i class="fas fa-ruler-combined"></i> ∆E00 (CIE2000) 色差
+                        </div>
+                        <div class="result-value" id="deltaE00">0.00</div>
+                        <div class="interpretation" id="interpretationE00">
+                            <strong>无法察觉的差异</strong> - 人眼无法察觉颜色差异。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 信息说明部分 -->
+        <div class="info-section">
+            <h3><i class="fas fa-info-circle"></i> 关于色差计算</h3>
+            <p><strong>∆Eab (CIE76)</strong>是简单的欧几里得距离，计算公式为：√((L₁-L₂)² + (a₁-a₂)² + (b₁-b₂)²)。</p>
+            <p><strong>∆E00 (CIE2000)</strong>是更复杂的色差公式，考虑了人眼对不同颜色区域的敏感性差异。</p>
+            
+            <table class="delta-e-table">
+                <thead>
+                    <tr>
+                        <th>∆E 值范围</th>
+                        <th>人眼感知差异</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>≤ 1.0</td>
+                        <td>无法察觉的差异</td>
+                    </tr>
+                    <tr>
+                        <td>1.0 - 2.0</td>
+                        <td>仅专家可察觉的差异</td>
+                    </tr>
+                    <tr>
+                        <td>2.0 - 3.5</td>
+                        <td>普通人可察觉的小差异</td>
+                    </tr>
+                    <tr>
+                        <td>3.5 - 5.0</td>
+                        <td>明显可察觉的差异</td>
+                    </tr>
+                    <tr>
+                        <td>> 5.0</td>
+                        <td>非常明显的差异</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>Lab颜色差异计算器 &copy; 2026 色彩标准化</p>
+            <p>基于CIE Lab颜色空间与色差公式，使用D50参考白点</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM元素
+        const l1Input = document.getElementById('l1');
+        const a1Input = document.getElementById('a1');
+        const b1Input = document.getElementById('b1');
+        const l1Slider = document.getElementById('l1-slider');
+        const a1Slider = document.getElementById('a1-slider');
+        const b1Slider = document.getElementById('b1-slider');
+        
+        const l2Input = document.getElementById('l2');
+        const a2Input = document.getElementById('a2');
+        const b2Input = document.getElementById('b2');
+        const l2Slider = document.getElementById('l2-slider');
+        const a2Slider = document.getElementById('a2-slider');
+        const b2Slider = document.getElementById('b2-slider');
+        
+        const colorDisplay1 = document.getElementById('colorDisplay1');
+        const colorDisplay2 = document.getElementById('colorDisplay2');
+        const labValues1 = document.getElementById('labValues1');
+        const labValues2 = document.getElementById('labValues2');
+        
+        const deltaEabEl = document.getElementById('deltaEab');
+        const deltaE00El = document.getElementById('deltaE00');
+        const interpretationEab = document.getElementById('interpretationEab');
+        const interpretationE00 = document.getElementById('interpretationE00');
+        
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // ∆E2000算法选择
+        const algorithmRadios = document.querySelectorAll('input[name="algorithm"]');
+        const customParamsDiv = document.getElementById('custom-params');
+        const kLInput = document.getElementById('kL');
+        const kCInput = document.getElementById('kC');
+        const kHInput = document.getElementById('kH');
+        const currentParamsDiv = document.getElementById('current-params');
+        
+        // D50参考白点值
+        const D50_X = 96.422;
+        const D50_Y = 100.000;
+        const D50_Z = 82.521;
+        
+        // 当前算法参数
+        let currentKL = 1;
+        let currentKC = 1;
+        let currentKH = 1;
+        
+        // 同步滑块和输入框的值
+        function syncInputAndSlider(input, slider) {
+            const updateValues = () => {
+                slider.value = input.value;
+                updateColors();
+            };
+            
+            input.addEventListener('input', updateValues);
+            input.addEventListener('change', updateValues);
+            
+            slider.addEventListener('input', () => {
+                input.value = slider.value;
+                updateColors();
+            });
+        }
+        
+        // 初始化所有输入框和滑块的同步
+        syncInputAndSlider(l1Input, l1Slider);
+        syncInputAndSlider(a1Input, a1Slider);
+        syncInputAndSlider(b1Input, b1Slider);
+        syncInputAndSlider(l2Input, l2Slider);
+        syncInputAndSlider(a2Input, a2Slider);
+        syncInputAndSlider(b2Input, b2Slider);
+        
+        // 算法选择事件监听
+        algorithmRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customParamsDiv.style.display = 'block';
+                } else {
+                    customParamsDiv.style.display = 'none';
+                }
+                updateCurrentParams();
+                updateColors();
+            });
+        });
+        
+        // 自定义参数变化监听
+        kLInput.addEventListener('change', handleCustomParamChange);
+        kCInput.addEventListener('change', handleCustomParamChange);
+        kHInput.addEventListener('change', handleCustomParamChange);
+        
+        kLInput.addEventListener('input', handleCustomParamChange);
+        kCInput.addEventListener('input', handleCustomParamChange);
+        kHInput.addEventListener('input', handleCustomParamChange);
+        
+        function handleCustomParamChange() {
+            document.getElementById('algorithm3').checked = true;
+            customParamsDiv.style.display = 'block';
+            updateCurrentParams();
+            updateColors();
+        }
+        
+        // 更新当前参数显示
+        function updateCurrentParams() {
+            const selectedAlgorithm = document.querySelector('input[name="algorithm"]:checked').value;
+            
+            if (selectedAlgorithm === '1:1:1') {
+                currentKL = 1;
+                currentKC = 1;
+                currentKH = 1;
+            } else if (selectedAlgorithm === '2:1:1') {
+                currentKL = 2;
+                currentKC = 1;
+                currentKH = 1;
+            } else {
+                currentKL = parseFloat(kLInput.value) || 1;
+                currentKC = parseFloat(kCInput.value) || 1;
+                currentKH = parseFloat(kHInput.value) || 1;
+            }
+            
+            kLInput.value = currentKL;
+            kCInput.value = currentKC;
+            kHInput.value = currentKH;
+            
+            currentParamsDiv.innerHTML = `<div class="parameter-value">当前参数: kL=${currentKL}, kC=${currentKC}, kH=${currentKH}</div>`;
+        }
+        
+        // Lab转RGB函数（使用D50白点）
+        function labToRgb(L, a, b) {
+            // 首先将Lab转换为XYZ
+            let y = (L + 16) / 116;
+            let x = a / 500 + y;
+            let z = y - b / 200;
+            
+            // 逆变换
+            const delta = 6/29;
+            x = (x > delta) ? Math.pow(x, 3) : (x - 16/116) * 3 * delta * delta;
+            y = (L > 8) ? Math.pow((L + 16) / 116, 3) : L / (3 * delta * delta);
+            z = (z > delta) ? Math.pow(z, 3) : (z - 16/116) * 3 * delta * delta;
+            
+            // 使用D50白点参考值
+            x *= D50_X / 100;
+            y *= D50_Y / 100;
+            z *= D50_Z / 100;
+            
+            // XYZ转RGB
+            let r = x * 3.1338561 + y * -1.6168667 + z * -0.4906146;
+            let g = x * -0.9787684 + y * 1.9161415 + z * 0.0334540;
+            let bVal = x * 0.0719453 + y * -0.2289914 + z * 1.4052427;
+            
+            // 线性RGB转sRGB
+            const gammaCorrect = (val) => {
+                if (val <= 0.0031308) {
+                    return 12.92 * val;
+                } else {
+                    return 1.055 * Math.pow(val, 1/2.4) - 0.055;
+                }
+            };
+            
+            r = gammaCorrect(r);
+            g = gammaCorrect(g);
+            bVal = gammaCorrect(bVal);
+            
+            // 限制在0-1范围内
+            r = Math.max(0, Math.min(1, r));
+            g = Math.max(0, Math.min(1, g));
+            bVal = Math.max(0, Math.min(1, bVal));
+            
+            // 转换为0-255范围
+            return [
+                Math.round(r * 255),
+                Math.round(g * 255),
+                Math.round(bVal * 255)
+            ];
+        }
+        
+        // 计算∆Eab (CIE76)
+        function calculateDeltaEab(L1, a1, b1, L2, a2, b2) {
+            return Math.sqrt(
+                Math.pow(L1 - L2, 2) + 
+                Math.pow(a1 - a2, 2) + 
+                Math.pow(b1 - b2, 2)
+            ).toFixed(2);
+        }
+        
+        // 计算∆E00 (CIE2000) - 完整实现
+        function calculateDeltaE00(L1, a1, b1, L2, a2, b2, kL, kC, kH) {
+            // 步骤1: 计算C1和C2
+            const C1 = Math.sqrt(a1 * a1 + b1 * b1);
+            const C2 = Math.sqrt(a2 * a2 + b2 * b2);
+            
+            // 步骤2: 计算平均C
+            const C_bar = (C1 + C2) / 2;
+            
+            // 步骤3: 计算G因子
+            const powC_bar7 = Math.pow(C_bar, 7);
+            const G = 0.5 * (1 - Math.sqrt(powC_bar7 / (powC_bar7 + Math.pow(25, 7))));
+            
+            // 步骤4: 计算a'
+            const a1_prime = a1 * (1 + G);
+            const a2_prime = a2 * (1 + G);
+            
+            // 步骤5: 计算C'
+            const C1_prime = Math.sqrt(a1_prime * a1_prime + b1 * b1);
+            const C2_prime = Math.sqrt(a2_prime * a2_prime + b2 * b2);
+            const C_bar_prime = (C1_prime + C2_prime) / 2;
+            
+            // 步骤6: 计算h'
+            const h1_prime = (Math.atan2(b1, a1_prime) * 180 / Math.PI + 360) % 360;
+            const h2_prime = (Math.atan2(b2, a2_prime) * 180 / Math.PI + 360) % 360;
+            
+            // 步骤7: 计算ΔL', ΔC', ΔH'
+            const deltaL_prime = L2 - L1;
+            const deltaC_prime = C2_prime - C1_prime;
+            
+            let delta_h_prime;
+            if (C1_prime * C2_prime === 0) {
+                delta_h_prime = 0;
+            } else {
+                const delta_h = h2_prime - h1_prime;
+                if (Math.abs(delta_h) <= 180) {
+                    delta_h_prime = delta_h;
+                } else if (delta_h > 180) {
+                    delta_h_prime = delta_h - 360;
+                } else {
+                    delta_h_prime = delta_h + 360;
+                }
+            }
+            
+            const deltaH_prime = 2 * Math.sqrt(C1_prime * C2_prime) * Math.sin(delta_h_prime * Math.PI / 360);
+            
+            // 步骤8: 计算平均L', C', h'
+            const L_bar_prime = (L1 + L2) / 2;
+            let h_bar_prime;
+            if (C1_prime * C2_prime === 0) {
+                h_bar_prime = h1_prime + h2_prime;
+            } else {
+                if (Math.abs(h1_prime - h2_prime) <= 180) {
+                    h_bar_prime = (h1_prime + h2_prime) / 2;
+                } else if (h1_prime + h2_prime < 360) {
+                    h_bar_prime = (h1_prime + h2_prime + 360) / 2;
+                } else {
+                    h_bar_prime = (h1_prime + h2_prime - 360) / 2;
+                }
+            }
+            
+            // 步骤9: 计算T
+            const T = 1 - 0.17 * Math.cos((h_bar_prime - 30) * Math.PI / 180)
+                        + 0.24 * Math.cos(2 * h_bar_prime * Math.PI / 180)
+                        + 0.32 * Math.cos((3 * h_bar_prime + 6) * Math.PI / 180)
+                        - 0.20 * Math.cos((4 * h_bar_prime - 63) * Math.PI / 180);
+            
+            // 步骤10: 计算Δθ
+            const delta_theta = 30 * Math.exp(-Math.pow((h_bar_prime - 275) / 25, 2));
+            
+            // 步骤11: 计算R_C
+            const powC_bar_prime7 = Math.pow(C_bar_prime, 7);
+            const R_C = 2 * Math.sqrt(powC_bar_prime7 / (powC_bar_prime7 + Math.pow(25, 7)));
+            
+            // 步骤12: 计算S_L, S_C, S_H
+            const S_L = 1 + (0.015 * Math.pow(L_bar_prime - 50, 2)) / Math.sqrt(20 + Math.pow(L_bar_prime - 50, 2));
+            const S_C = 1 + 0.045 * C_bar_prime;
+            const S_H = 1 + 0.015 * C_bar_prime * T;
+            
+            // 步骤13: 计算R_T
+            const R_T = -Math.sin(2 * delta_theta * Math.PI / 180) * R_C;
+            
+            // 步骤14: 计算ΔE00
+            const deltaE00 = Math.sqrt(
+                Math.pow(deltaL_prime / (kL * S_L), 2) +
+                Math.pow(deltaC_prime / (kC * S_C), 2) +
+                Math.pow(deltaH_prime / (kH * S_H), 2) +
+                R_T * (deltaC_prime / (kC * S_C)) * (deltaH_prime / (kH * S_H))
+            );
+            
+            return deltaE00.toFixed(2);
+        }
+        
+        // 获取色差解释
+        function getDeltaEInterpretation(deltaE) {
+            const deltaENum = parseFloat(deltaE);
+            
+            if (deltaENum <= 1.0) {
+                return { text: "无法察觉的差异", desc: "人眼无法察觉颜色差异，专业色彩匹配要求。" };
+            } else if (deltaENum <= 2.0) {
+                return { text: "仅专家可察觉的差异", desc: "只有经过训练的专业人员才能察觉到颜色差异。" };
+            } else if (deltaENum <= 3.5) {
+                return { text: "普通人可察觉的小差异", desc: "普通人可以察觉到较小的颜色差异。" };
+            } else if (deltaENum <= 5.0) {
+                return { text: "明显可察觉的差异", desc: "普通人眼可以明显察觉到颜色差异。" };
+            } else {
+                return { text: "非常明显的差异", desc: "颜色差异非常明显，属于不同的颜色。" };
+            }
+        }
+        
+        // 更新颜色显示和计算结果
+        function updateColors() {
+            // 获取输入值
+            const L1 = parseFloat(l1Input.value) || 0;
+            const a1 = parseFloat(a1Input.value) || 0;
+            const b1 = parseFloat(b1Input.value) || 0;
+            
+            const L2 = parseFloat(l2Input.value) || 0;
+            const a2 = parseFloat(a2Input.value) || 0;
+            const b2 = parseFloat(b2Input.value) || 0;
+            
+            // 更新当前参数
+            updateCurrentParams();
+            
+            // 更新Lab值显示
+            labValues1.textContent = `Lab(${L1.toFixed(1)}, ${a1.toFixed(1)}, ${b1.toFixed(1)})`;
+            labValues2.textContent = `Lab(${L2.toFixed(1)}, ${a2.toFixed(1)}, ${b2.toFixed(1)})`;
+            
+            // 计算RGB值
+            const rgb1 = labToRgb(L1, a1, b1);
+            const rgb2 = labToRgb(L2, a2, b2);
+            
+            // 更新颜色显示
+            colorDisplay1.style.backgroundColor = `rgb(${rgb1[0]}, ${rgb1[1]}, ${rgb1[2]})`;
+            colorDisplay2.style.backgroundColor = `rgb(${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]})`;
+            
+            // 根据亮度调整文字颜色
+            const luminance1 = 0.299 * rgb1[0] + 0.587 * rgb1[1] + 0.114 * rgb1[2];
+            const luminance2 = 0.299 * rgb2[0] + 0.587 * rgb2[1] + 0.114 * rgb2[2];
+            
+            colorDisplay1.querySelector('.color-name').style.color = luminance1 > 128 ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)";
+            colorDisplay2.querySelector('.color-name').style.color = luminance2 > 128 ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)";
+            
+            // 计算色差
+            const deltaEab = calculateDeltaEab(L1, a1, b1, L2, a2, b2);
+            const deltaE00 = calculateDeltaE00(L1, a1, b1, L2, a2, b2, currentKL, currentKC, currentKH);
+            
+            // 更新显示
+            deltaEabEl.textContent = deltaEab;
+            deltaE00El.textContent = deltaE00;
+            
+            // 更新解释
+            const interpretationEabData = getDeltaEInterpretation(deltaEab);
+            const interpretationE00Data = getDeltaEInterpretation(deltaE00);
+            
+            interpretationEab.innerHTML = `<strong>${interpretationEabData.text}</strong> - ${interpretationEabData.desc}`;
+            interpretationE00.innerHTML = `<strong>${interpretationE00Data.text}</strong> - ${interpretationE00Data.desc}`;
+        }
+        
+        // 重置为默认值
+        function resetToDefaults() {
+            l1Input.value = 50;
+            l1Slider.value = 50;
+            a1Input.value = 0;
+            a1Slider.value = 0;
+            b1Input.value = 0;
+            b1Slider.value = 0;
+            
+            l2Input.value = 50;
+            l2Slider.value = 50;
+            a2Input.value = 0;
+            a2Slider.value = 0;
+            b2Input.value = 0;
+            b2Slider.value = 0;
+            
+            // 重置算法选择
+            document.getElementById('algorithm1').checked = true;
+            customParamsDiv.style.display = 'none';
+            kLInput.value = 1;
+            kCInput.value = 1;
+            kHInput.value = 1;
+            
+            updateColors();
+        }
+        
+        // 事件监听
+        calculateBtn.addEventListener('click', updateColors);
+        resetBtn.addEventListener('click', resetToDefaults);
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            updateColors();
+        });
+        
+        // 移动端触摸优化
+        document.addEventListener('touchstart', function() {}, {passive: true});
+    </script>
+</body>
+</html>
